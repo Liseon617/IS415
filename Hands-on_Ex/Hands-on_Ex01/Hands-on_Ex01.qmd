@@ -1,6 +1,12 @@
 ---
 title: "Hands-on Exercise 1"
 author: "Brian Lim"
+date: "August 16, 2024"
+date-modified: "last-modified"
+execute: 
+  eval: true
+  echo: true
+  freeze: true
 ---
 
 ## **1.1 Exercise Overview**
