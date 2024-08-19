@@ -76,13 +76,17 @@ cyclingpath = st_read(dsn = "data/geospatial/CyclingPath_Jul2024",
                          layer = "CyclingPathGazette")
 ```
 
-This output reveals that the `cyclingpath` object is a simple feature data frame containing 3138 line features and 2 fields, with the same `SVY21` projected coordinate system. \### **1.4.3 Importing GIS data in (KML format)**
+This output reveals that the `cyclingpath` object is a simple feature data frame containing 3138 line features and 2 fields, with the same `SVY21` projected coordinate system. 
+
+### **1.4.3 Importing GIS data in (KML format)**
 
 ```{r}
 preschool = st_read("data/geospatial/PreSchoolsLocation.kml")
 ```
 
-This message indicates that `preschool` is a point feature data frame with 2290 features and 2 fields, using the `WGS 84` geodetic coordinate system, different from the previous datasets. \## **1.5 Checking the Content of A Simple Feature Data Frame**
+This message indicates that `preschool` is a point feature data frame with 2290 features and 2 fields, using the `WGS 84` geodetic coordinate system, different from the previous datasets. 
+
+## **1.5 Checking the Content of A Simple Feature Data Frame**
 
 In this sub-section, we will use different ways to retrieve information related to the content of a simple feature data frame.
 

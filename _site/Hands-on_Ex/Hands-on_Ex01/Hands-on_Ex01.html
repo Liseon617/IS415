@@ -167,6 +167,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#importing-polygon-feature-data-shapefile-format" id="toc-importing-polygon-feature-data-shapefile-format" class="nav-link" data-scroll-target="#importing-polygon-feature-data-shapefile-format"><strong>1.4.1 Importing polygon feature data (shapefile format)</strong></a></li>
   <li><a href="#importing-polyline-feature-data-shapefile-format" id="toc-importing-polyline-feature-data-shapefile-format" class="nav-link" data-scroll-target="#importing-polyline-feature-data-shapefile-format"><strong>1.4.2 Importing polyline feature data (Shapefile Format)</strong></a></li>
+  <li><a href="#importing-gis-data-in-kml-format" id="toc-importing-gis-data-in-kml-format" class="nav-link" data-scroll-target="#importing-gis-data-in-kml-format"><strong>1.4.3 Importing GIS data in (KML format)</strong></a></li>
+  </ul></li>
+  <li><a href="#checking-the-content-of-a-simple-feature-data-frame" id="toc-checking-the-content-of-a-simple-feature-data-frame" class="nav-link" data-scroll-target="#checking-the-content-of-a-simple-feature-data-frame"><strong>1.5 Checking the Content of A Simple Feature Data Frame</strong></a>
+  <ul class="collapse">
   <li><a href="#working-with-st_geometry" id="toc-working-with-st_geometry" class="nav-link" data-scroll-target="#working-with-st_geometry"><strong>1.5.1 <em>Working with st_geometry()</em></strong></a></li>
   <li><a href="#glimpse" id="toc-glimpse" class="nav-link" data-scroll-target="#glimpse"><strong>1.5.2 glimpse()</strong></a></li>
   <li><a href="#head" id="toc-head" class="nav-link" data-scroll-target="#head"><strong>1.5.3 <em>head()</em></strong></a></li>
@@ -299,7 +303,10 @@ Bounding box:  xmin: 11854.32 ymin: 28347.98 xmax: 42644.17 ymax: 48948.15
 Projected CRS: SVY21</code></pre>
 </div>
 </div>
-<p>This output reveals that the <code>cyclingpath</code> object is a simple feature data frame containing 3138 line features and 2 fields, with the same <code>SVY21</code> projected coordinate system. ### <strong>1.4.3 Importing GIS data in (KML format)</strong></p>
+<p>This output reveals that the <code>cyclingpath</code> object is a simple feature data frame containing 3138 line features and 2 fields, with the same <code>SVY21</code> projected coordinate system.</p>
+</section>
+<section id="importing-gis-data-in-kml-format" class="level3">
+<h3 class="anchored" data-anchor-id="importing-gis-data-in-kml-format"><strong>1.4.3 Importing GIS data in (KML format)</strong></h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>preschool <span class="ot">=</span> <span class="fu">st_read</span>(<span class="st">"data/geospatial/PreSchoolsLocation.kml"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -314,9 +321,12 @@ z_range:       zmin: 0 zmax: 0
 Geodetic CRS:  WGS 84</code></pre>
 </div>
 </div>
-<p>This message indicates that <code>preschool</code> is a point feature data frame with 2290 features and 2 fields, using the <code>WGS 84</code> geodetic coordinate system, different from the previous datasets. ## <strong>1.5 Checking the Content of A Simple Feature Data Frame</strong></p>
-<p>In this sub-section, we will use different ways to retrieve information related to the content of a simple feature data frame.</p>
+<p>This message indicates that <code>preschool</code> is a point feature data frame with 2290 features and 2 fields, using the <code>WGS 84</code> geodetic coordinate system, different from the previous datasets.</p>
 </section>
+</section>
+<section id="checking-the-content-of-a-simple-feature-data-frame" class="level2">
+<h2 class="anchored" data-anchor-id="checking-the-content-of-a-simple-feature-data-frame"><strong>1.5 Checking the Content of A Simple Feature Data Frame</strong></h2>
+<p>In this sub-section, we will use different ways to retrieve information related to the content of a simple feature data frame.</p>
 <section id="working-with-st_geometry" class="level3">
 <h3 class="anchored" data-anchor-id="working-with-st_geometry"><strong>1.5.1 <em>Working with st_geometry()</em></strong></h3>
 <p>The geometry column in an <code>sf</code> data frame is a list of class <code>sfc.</code> To access the geometry list-column, we use a more general approach, the <code>st_geometry()</code> function, as shown below:</p>
