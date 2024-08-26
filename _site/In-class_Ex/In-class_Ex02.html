@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Brian Lim">
-<meta name="dcterms.date" content="2024-08-19">
+<meta name="dcterms.date" content="2024-08-26">
 
 <title>Brian’s IS415 Experience - In Class exercise 2</title>
 <style>
@@ -214,7 +214,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">August 19, 2024</p>
+      <p class="date">August 26, 2024</p>
     </div>
   </div>
   
@@ -234,7 +234,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="getting-started" class="level2">
 <h2 class="anchored" data-anchor-id="getting-started"><strong>2.0 Getting Started</strong></h2>
-<p>For this exercise, two R packages will be used:</p>
+<p>For this in-class exercise, two R packages will be used:</p>
 <ul>
 <li><p><code>sf</code> for importing, managing, and processing geospatial data</p></li>
 <li><p><code>tidyverse</code> for performing data science tasks such as importing, wrangling and visualising data.</p></li>
@@ -260,12 +260,13 @@ Bounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33
 Projected CRS: SVY21</code></pre>
 </div>
 </div>
-<p>Data conversion from SHP file format to KML file format</p>
+<p>The code chunk below demonstrates data conversion from SHP file format to KML file format:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mpsz14_kml <span class="ot">&lt;-</span> <span class="fu">st_write</span>(mpsz14_shp, </span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"data/MasterPlan2014SubzoneBoundaryWebKML.kml"</span>,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">delete_dsn =</span> <span class="cn">TRUE</span>) <span class="co"># make sure to delete original before render the new file</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">delete_dsn =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>The delete_dsn argument relates to the dsn (Data Source Name) to delete original source before writing the new file</p>
 </section>
 <section id="working-with-master-plan-2019-subzone-boundary-data" class="level2">
 <h2 class="anchored" data-anchor-id="working-with-master-plan-2019-subzone-boundary-data"><strong>2.2 Working with Master Plan 2019 Subzone Boundary Data</strong></h2>
