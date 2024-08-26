@@ -1,7 +1,7 @@
 ---
 title: "In Class exercise 2"
 author: "Brian Lim"
-date: "August 19, 2024"
+date: "August 26, 2024"
 date-modified: "last-modified"
 format: html
 editor: visual
@@ -50,12 +50,13 @@ mpsz19_shp <- st_read(dsn = "data/MasterPlan2019SubzoneBoundaryWebSHP",
   st_transform(crs = 3414)
 ```
 
-## **Working with population data**
+## **2.3 Working with population data**
 
 ```{r}
 popdata <- read_csv("data/respopagesextod2023/respopagesextod2023.csv")
 ```
-### **Data Wrangling**
+### **2.3.1 Data Preparation**
+
 ```{r}
 popdata2023 <- popdata %>%
   group_by(PA, SZ, AG) %>%
@@ -67,6 +68,8 @@ popdata2023 <- popdata %>%
 colnames(popdata2023)
 ```
 As seen above, unlike other programming languages, R indexes from '1' instead of '0'. The rows begin from `[1]`,`[6]`,`[11]`, etc.
+
+### **2.3.2 Data Wrangling**
 
 ```{r}
 popdata2023 <- popdata2023 %>%
@@ -90,7 +93,7 @@ mutate_at(.vars = vars(PA, SZ),
 ```
 
 
-### Differing Ways to combine 2 datasets with left_join()
+### **2.3.3 Joining the attribute data and geospatial data**
 ```{r}
 mpsz_2023 <- left_join(mpsz19_shp, popdata2023,
                        by = c("SUBZONE_N" = "SZ"))
