@@ -9,3 +9,4 @@ Welcome! I'm **Brian Lim ZhengLong**, an undergraduate at **Singapore Management
 Let's connect and learn together!
 
 [![](images/LinkedIn_logo.png){fig-align="left" width="20"}](https://www.linkedin.com/in/brian-limzl/)
+[![](images/Github_logo.png){fig-align="left" width="20"}](https://www.github.com/Liseon617)
