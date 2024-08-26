@@ -1,0 +1,111 @@
+---
+title: "In Class exercise 2"
+author: "Brian Lim"
+date: "August 19, 2024"
+date-modified: "last-modified"
+format: html
+editor: visual
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
+---
+
+## **2.0 Getting Started**
+
+For this exercise, two R packages will be used:
+
+-   `sf` for importing, managing, and processing geospatial data
+
+-   `tidyverse` for performing data science tasks such as importing, wrangling and visualising data.
+
+To install and load these packages into the R environment, we use the `p_load` function from the `pacman` package:
+
+```{r}
+pacman::p_load(sf,tidyverse)
+```
+
+## **2.1 Working with Master Plan 2014 Subzone Boundary Data**
+
+```{r}
+mpsz14_shp <- st_read(dsn = "data/MasterPlan2014SubzoneBoundaryWebSHP", 
+                  layer = "MP14_SUBZONE_WEB_PL")
+```
+Data conversion from SHP file format to KML file format
+```{r}
+#| output: false
+mpsz14_kml <- st_write(mpsz14_shp, 
+  "data/MasterPlan2014SubzoneBoundaryWebKML.kml",
+  delete_dsn = TRUE) # make sure to delete original before render the new file
+```
+
+## **2.2 Working with Master Plan 2019 Subzone Boundary Data**
+```{r}
+mpsz19_kml <- st_read("data/MasterPlan2019SubzoneBoundaryNoSeaKML.kml")
+```
+```{r}
+mpsz19_shp <- st_read(dsn = "data/MasterPlan2019SubzoneBoundaryWebSHP", 
+                      layer = "MPSZ-2019") %>%
+  st_transform(crs = 3414)
+```
+
+## **Working with population data**
+
+```{r}
+popdata <- read_csv("data/respopagesextod2023/respopagesextod2023.csv")
+```
+### **Data Wrangling**
+```{r}
+popdata2023 <- popdata %>%
+  group_by(PA, SZ, AG) %>%
+  summarise(`POP` = sum(`Pop`)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = AG,
+              values_from = POP)
+
+colnames(popdata2023)
+```
+As seen above, unlike other programming languages, R indexes from '1' instead of '0'. The rows begin from `[1]`,`[6]`,`[11]`, etc.
+
+```{r}
+popdata2023 <- popdata2023 %>%
+mutate(YOUNG = rowSums(.[3:6])
+         +rowSums(.[14])) %>%
+mutate(`ECONOMY ACTIVE` = rowSums(.[7:13])+
+rowSums(.[15]))%>%
+mutate(`AGED`=rowSums(.[16:21])) %>%
+mutate(`TOTAL`=rowSums(.[3:21])) %>%  
+mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
+/`ECONOMY ACTIVE`) %>%
+  select(`PA`, `SZ`, `YOUNG`, 
+       `ECONOMY ACTIVE`, `AGED`, 
+       `TOTAL`, `DEPENDENCY`)
+```
+
+```{r}
+popdata2023 <- popdata2023 %>%
+mutate_at(.vars = vars(PA, SZ),
+          .funs = list(toupper))
+```
+
+
+### Differing Ways to combine 2 datasets with left_join()
+```{r}
+mpsz_2023 <- left_join(mpsz19_shp, popdata2023,
+                       by = c("SUBZONE_N" = "SZ"))
+```
+
+```{r}
+pop2023_mpsz <- left_join(popdata2023, mpsz19_shp,
+                       by = c("SZ" = "SUBZONE_N"))
+```
+
+
+
+
+
+
+
+
+
