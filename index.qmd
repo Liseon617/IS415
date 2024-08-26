@@ -1,6 +1,8 @@
 ---
 title: "Welcome"
-listing: Hands-on_Ex
+listing:
+  contents: Hands-on_Ex
+  type: grid
 ---
 
-Welcome to IS415 Geospatial Analytics and Applications. In this website, you will find my coursework prepared for this course.
+Welcome to my IS415 Geospatial Analytics and Applications. In this website, you will find my coursework prepared for this course.

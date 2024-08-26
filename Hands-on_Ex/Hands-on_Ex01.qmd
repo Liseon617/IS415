@@ -1,8 +1,15 @@
 ---
-title: "Hands-on Exercise 1"
+title: "Geospatial Data Science with R"
 author: "Brian Lim"
 date: "August 16, 2024"
 date-modified: "last-modified"
+categories:
+  - Analysis
+  - R
+  - sf
+  - tidyverse
+format: html
+editor: visual
 execute: 
   eval: true
   echo: true

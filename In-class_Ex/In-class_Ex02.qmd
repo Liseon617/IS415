@@ -3,6 +3,11 @@ title: "In Class exercise 2"
 author: "Brian Lim"
 date: "August 26, 2024"
 date-modified: "last-modified"
+categories:
+  - Analysis
+  - R
+  - sf
+  - tidyverse
 format: html
 editor: visual
 execute: 

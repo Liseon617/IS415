@@ -1,11 +1,20 @@
 ---
-title: "Hands-on Exercise 2"
+title: "Thematic Mapping and GeoVisualisation with R"
 author: "Brian Lim"
 date: "August 23, 2024"
 date-modified: "last-modified"
+categories:
+  - Analysis
+  - R
+  - sf
+  - tmap
+  - tidyverse
+format: html
+editor: visual
 execute: 
   eval: true
   echo: true
+  warning: false
   freeze: true
 ---
 

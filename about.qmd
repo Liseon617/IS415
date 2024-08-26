@@ -2,8 +2,10 @@
 title: "About"
 ---
 
-About this site
+![](images/profile.jpg){fig-align="center" width="200" style="border-radius: 50%; display: block; margin: 0 auto;"}
 
-```{r}
-1 + 1
-```
+Welcome! I'm **Brian Lim ZhengLong**, an undergraduate at **Singapore Management University (SMU)**. This website is dedicated to documenting my learning journey in **IS415: Geospatial Analytics and Applications** under the guidance of Professor Kam Tin Seong. Join me as I explore the fascinating realms of big data, geospatial analysis, and urban planning.
+
+Let's connect and learn together!
+
+[![](images/LinkedIn_logo.png){fig-align="left" width="20"}](https://www.linkedin.com/in/brian-limzl/)
