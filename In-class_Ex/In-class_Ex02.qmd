@@ -37,19 +37,24 @@ pacman::p_load(sf,tidyverse)
 mpsz14_shp <- st_read(dsn = "data/MasterPlan2014SubzoneBoundaryWebSHP", 
                   layer = "MP14_SUBZONE_WEB_PL")
 ```
+
 The code chunk below demonstrates data conversion from SHP file format to KML file format:
+
 ```{r}
 #| output: false
 mpsz14_kml <- st_write(mpsz14_shp, 
   "data/MasterPlan2014SubzoneBoundaryWebKML.kml",
   delete_dsn = TRUE)
 ```
+
 The delete_dsn argument relates to the dsn (Data Source Name) to delete original source before writing the new file
 
 ## **2.2 Working with Master Plan 2019 Subzone Boundary Data**
+
 ```{r}
 mpsz19_kml <- st_read("data/MasterPlan2019SubzoneBoundaryNoSeaKML.kml")
 ```
+
 ```{r}
 mpsz19_shp <- st_read(dsn = "data/MasterPlan2019SubzoneBoundaryWebSHP", 
                       layer = "MPSZ-2019") %>%
@@ -61,6 +66,7 @@ mpsz19_shp <- st_read(dsn = "data/MasterPlan2019SubzoneBoundaryWebSHP",
 ```{r}
 popdata <- read_csv("data/respopagesextod2023/respopagesextod2023.csv")
 ```
+
 ### **2.3.1 Data Preparation**
 
 ```{r}
@@ -73,6 +79,7 @@ popdata2023 <- popdata %>%
 
 colnames(popdata2023)
 ```
+
 As seen above, unlike other programming languages, R indexes from '1' instead of '0'. The rows begin from `[1]`,`[6]`,`[11]`, etc.
 
 ### **2.3.2 Data Wrangling**
@@ -98,8 +105,8 @@ mutate_at(.vars = vars(PA, SZ),
           .funs = list(toupper))
 ```
 
-
 ### **2.3.3 Joining the attribute data and geospatial data**
+
 ```{r}
 mpsz_2023 <- left_join(mpsz19_shp, popdata2023,
                        by = c("SUBZONE_N" = "SZ"))
@@ -109,12 +116,3 @@ mpsz_2023 <- left_join(mpsz19_shp, popdata2023,
 pop2023_mpsz <- left_join(popdata2023, mpsz19_shp,
                        by = c("SZ" = "SUBZONE_N"))
 ```
-
-
-
-
-
-
-
-
-
