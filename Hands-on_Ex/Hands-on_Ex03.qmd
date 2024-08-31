@@ -800,7 +800,7 @@ The null hypothesis will be rejected if p-value is smaller than alpha value of 0
 The code chunk below is used to perform the hypothesis testing.
 
 ```{r}
-K_ck.csr <- envelope(childcare_ck_ppp, Kest, nsim = 99, rank = 1, glocal=TRUE)
+K_ck.csr <- envelope(childcare_ck_ppp, Kest, nsim = 99, rank = 1, global=TRUE)
 ```
 
 ```{r}
@@ -831,7 +831,7 @@ The null hypothesis will be rejected if p-value is smaller than alpha value of 0
 The code chunk below is used to perform the hypothesis testing.
 
 ```{r}
-K_tm.csr <- envelope(childcare_tm_ppp, Kest, nsim = 99, rank = 1, glocal=TRUE)
+K_tm.csr <- envelope(childcare_tm_ppp, Kest, nsim = 99, rank = 1, global=TRUE)
 ```
 
 ```{r}
@@ -868,7 +868,7 @@ The null hypothesis will be rejected if p-value is smaller than alpha value of 0
 The code chunk below is used to perform the hypothesis testing.
 
 ```{r}
-L_ck.csr <- envelope(childcare_ck_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+L_ck.csr <- envelope(childcare_ck_ppp, Lest, nsim = 99, rank = 1, global=TRUE)
 ```
 
 ```{r}
@@ -899,7 +899,7 @@ The null hypothesis will be rejected if p-value is smaller than alpha value of 0
 The code chunk below is used to perform the hypothesis testing.
 
 ```{r}
-L_tm.csr <- envelope(childcare_tm_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+L_tm.csr <- envelope(childcare_tm_ppp, Lest, nsim = 99, rank = 1, global=TRUE)
 ```
 
 ```{r}
