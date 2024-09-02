@@ -95,6 +95,7 @@ mpsz_sf <- st_transform(mpsz_sf, crs = 3414)
 After verifying that all datasets share the same CRS, it's useful to visualize them to confirm their spatial alignment.
 
 ```{r}
+#| eval: false
 tmap_mode("plot")
 tm_shape(mpsz_sf) +
   tm_polygons() + 
@@ -110,6 +111,7 @@ In this code chunk:
 -   `tm_dots()`: Plots the childcare centers as red dots with a black border.
 
 ```{r}
+#| eval: false
 tmap_mode('view')
 
 tm_shape(childcare_sf) +
@@ -121,6 +123,7 @@ tmap_mode('plot')
 By ensuring that all geospatial layers align correctly within the same map extent, we confirm that their CRS and coordinate values are consistent—a critical aspect of any geospatial analysis.
 
 ```{r}
+#| eval: false
 tmap_mode('plot')
 ```
 
@@ -221,6 +224,7 @@ The output show 128 duplicated point events.
 To view the locations of these duplicate point events, we will plot `childcare` data by using the code chunk below.
 
 ```{r}
+#| eval: false
 tmap_mode('view')
 tm_shape(childcare) +
   tm_dots(alpha=0.4, 
@@ -228,6 +232,7 @@ tm_shape(childcare) +
 ```
 
 ```{r}
+#| eval: false
 tmap_mode('plot')
 tmap_mode('view')
 ```
