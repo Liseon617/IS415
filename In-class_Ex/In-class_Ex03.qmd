@@ -1,0 +1,86 @@
+---
+title: "In Class exercise 3"
+author: "Brian Lim"
+date: "September 2, 2024"
+date-modified: "last-modified"
+categories:
+  - Analysis
+  - R
+  - sf
+  - tidyverse
+format: html
+editor: visual
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
+---
+
+## **3.0 Notes**:
+
+-   Conduct a Monte Carlo simulation to test for Complete Spatial Randomness (CSR)
+
+-   Monte Carlo simulation test of CSR:
+
+    -   To determine the simulation envelope, use the 95th percentile (maximum) and 5th percentile (minimum) values of G(r) from the simulations.
+
+    -   When randomising data it is important to set seed to have it be repeatable
+
+-   Nearest Neighbour Index:
+
+    -   Before hypothesis, one should determine confidence interval (confidence level) to justify conclusion reached
+
+    -   Due to the unpredictability of real life data, uncertainty would need to be considered via the confidence level
+
+        -   99 - 99.9 confidence level should be avoided due to the perceived notion that it is almost fully accurate, which cannot happen due to real world uncertainty
+
+    -   Reject P-value, if P-value\< Alpha value
+
+-   L Functions Interpretation:
+
+    -   Signs of clustering can be determined from how much higher the L value is above the envelope
+
+-   Ripley's K function:
+
+    -   Both G function and K function are distance based, but G function is for any particular zone (isolated), but K function is cumulative in nature (inclusive)
+
+    -   Usage lies in zoning based on the various interval ranges
+
+## **3.1 Getting Started**
+
+Maptools is retired and binary is removed from CRAN. However, we can download froom Posit Public Package Manager
+
+```{r}
+#| eval: false
+install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-10-13")
+```
+
+```{r}
+pacman::p_load(sf, raster, spatstat, tmap, tidyverse)
+```
+
+### **3.1.1 Working with st_union()**
+
+The code chunk below is used to derive the coastal outline in tibble data frame sg_sf \<- mpsz_sf %\>% st_union()
+
+## **3.2 Viewing data for Take Home exercise 1**
+
+```{r}
+acled_sf <- read_csv("data/ACLED_Myanmar.csv") %>% 
+  st_as_sf(coords = c(
+    "longitude", "latitude"), crs = 4326) %>% 
+  st_transform(crs= 32647) %>%
+  mutate(event_date = dmy(event_date))
+```
+
+```{r}
+tmap_mode('view')
+acled_sf %>%
+  filter(year == 2023 |
+           event_type == "Political violence") %>%
+  tm_shape()+
+  tm_dots()
+tmap_mode("plot")
+  
+```

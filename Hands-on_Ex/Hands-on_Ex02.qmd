@@ -165,6 +165,7 @@ Two approaches can be used to prepare thematic map using *tmap*, they are:
 The quickest way to draw a choropleth map is using the `qtm()` function, which provides a good default visualization with minimal coding. Here's how you can use it:
 
 ```{r}
+#| eval: false
 tmap_mode("plot")
 qtm(mpsz_pop2020, fill = "DEPENDENCY")
 ```
