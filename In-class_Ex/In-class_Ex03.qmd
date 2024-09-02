@@ -75,6 +75,7 @@ acled_sf <- read_csv("data/ACLED_Myanmar.csv") %>%
 ```
 
 ```{r}
+#| eval: false
 tmap_mode('view')
 acled_sf %>%
   filter(year == 2023 |
