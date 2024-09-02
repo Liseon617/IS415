@@ -16,10 +16,10 @@ execute:
   warning: false
   freeze: true
 ---
+
 ```{r}
 pacman::p_load(sf, raster, spatstat, tmap, tidyverse)
 ```
-
 
 ```{r}
 acled_sf <- read_csv("data/ACLED_Myanmar.csv") %>% 
