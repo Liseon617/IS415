@@ -402,6 +402,7 @@ Given the goals of our analysis, which emphasize consistency and smoothness over
 ### **1.6 Year 2021**
 
 ```{r}
+#| eval: false
 # Function to create combined events object with owin object
 plot_event_by_quarter <- function(event_data, event_name) {
   quarter_data_ppp <- as.ppp(st_coordinates(event_data), st_bbox(event_data))
