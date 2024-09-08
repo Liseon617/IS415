@@ -16,6 +16,7 @@ execute:
   echo: true
   warning: false
   freeze: true
+  cache: true
 ---
 
 ## **2.1 Exercise Overview**

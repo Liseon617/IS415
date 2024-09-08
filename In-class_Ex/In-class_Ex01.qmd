@@ -8,4 +8,5 @@ execute:
   echo: true
   warning: false
   freeze: true
+  cache: true
 ---

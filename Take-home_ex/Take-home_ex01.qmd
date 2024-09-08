@@ -197,8 +197,10 @@ Example <- "Violence against civilians"
 acled_2021_Q1 <- acled_sf %>%
   filter(event_type == Example & year == 2021)
 quarter_data <- as_Spatial(acled_2021_Q1)
+regions <- as_Spatial(regions_sf)
 
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
+regions_sp <- as(regions, "SpatialPolygons")
 
 quarter_data_ppp <- as.ppp(st_coordinates(acled_2021_Q1), st_bbox(acled_2021_Q1))
 quarter_data_ppp
@@ -398,6 +400,32 @@ Given the goals of our analysis, which emphasize consistency and smoothness over
 ## **1.6 Year 2021**
 
 ### **Quarter 1**
+```{r}
+# Function to create combined events object with owin object
+plot_event_by_quarter <- function(event_data, event_name) {
+  quarter_data_ppp <- as.ppp(st_coordinates(event_data), st_bbox(event_data))
+  regions_owin <- as.owin(regions_sf)
+  quarter_data_regions_ppp = quarter_data_ppp[regions_owin]
+  plot(quarter_data_regions_ppp,
+     main = paste("Events in Myanmar -", event_name),
+     xlab = "Longitude", ylab = "Latitude")
+}
+```
+
+```{r}
+# Filter for the event type battles
+acled_2021_Q1 <- acled_sf %>%
+  filter(quarter == "2021 Q1")
+
+# Get a list of unique quarters
+events <- unique(acled_2021_Q1$event_type)
+
+# Loop over each quarter and generate the plot
+map(events, ~ {
+  event_data <- acled_2021_Q1 %>% filter(event_type == .x)
+  plot_event_by_quarter(event_data, .x)
+})
+```
 
 ### **Quarter 2**
 
@@ -435,201 +463,7 @@ Given the goals of our analysis, which emphasize consistency and smoothness over
 
 ### **Quarter 4**
 
-```{r}
-# Function to create combined events object with owin object
-plot_event_by_quarter <- function(event_data, event_name) {
-  quarter_data_ppp <- as.ppp(st_coordinates(event_data), st_bbox(event_data))
-  regions_owin <- as.owin(regions_sf)
-  quarter_data_regions_ppp = quarter_data_ppp[regions_owin]
-  plot(quarter_data_regions_ppp,
-     main = paste("Events in Myanmar -", event_name),
-     xlab = "Longitude", ylab = "Latitude")
-}
-```
 
-```{r}
-# Filter for the event type battles
-acled_2021_Q1 <- acled_sf %>%
-  filter(quarter == "2021 Q1")
 
-# Get a list of unique quarters
-events <- unique(acled_2021_Q1$event_type)
 
-# Loop over each quarter and generate the plot
-map(events, ~ {
-  event_data <- acled_2021_Q1 %>% filter(event_type == .x)
-  plot_event_by_quarter(event_data, .x)
-})
-```
 
-```{r}
-regions <- as_Spatial(regions_sf)
-regions_sp <- as(regions, "SpatialPolygons")
-```
-
-#### Plotting Interactive KDE Maps
-
-```{r}
-raster_kde_fixed_scott <- raster(kde_quarter_data_regions_fixed_scott)
-raster_kde_adaptive_kernel <- raster(kde_quarter_data_regions_adaptive)
-projection(raster_kde_fixed_scott) <- CRS("+init=EPSG:32647 +units=km")
-projection(kde_quarter_data_regions_adaptive) <- CRS("+init=EPSG:32647 +units=km")
-```
-
-```{r}
-tmap_mode('view')
-kde_fixed_scott <- tm_basemap(server = "OpenStreetMap.HOT") +
-  tm_basemap(server = "Esri.WorldImagery") +
-  tm_shape(raster_kde_fixed_scott) +
-  tm_raster("layer",
-            n = 10,
-            title = "KDE_Fixed_scott",
-            alpha = 0.6,
-            palette = c("#fafac3","#fd953b","#f02a75","#b62385","#021c9e")) +
-  tm_shape(mpsz_sf)+
-  tm_polygons(alpha=0.1,id="PLN_AREA_N")+
-  tmap_options(check.and.fix = TRUE)
-
-tmap_mode('view')
-kde_adaptive_kernel <- tm_basemap(server = "OpenStreetMap.HOT") +
-  tm_basemap(server = "Esri.WorldImagery") +
-  tm_shape(raster_kde_adaptive_kernel) +
-  tm_raster("layer",
-            n = 7,
-            title = "KDE_Adaptive_Kernel",
-            style = "pretty",
-            alpha = 0.6,
-            palette = c("#fafac3","#fd953b","#f02a75","#b62385","#021c9e")) +
-  tm_shape(mpsz_sf)+
-  tm_polygons(alpha=0.1,id="PLN_AREA_N")+
-  tmap_options(check.and.fix = TRUE)
-
-tmap_arrange(kde_fixed_scott, kde_adaptive_kernel ,ncol=1,nrow=3,sync = TRUE)
-```
-
-```{r}
-bw.CvL(quarter_data_regions_ppp.km)
-bw.scott(quarter_data_regions_ppp.km)
-bw.ppl(quarter_data_regions_ppp.km)
-bw.diggle(quarter_data_regions_ppp.km)
-```
-
-```{r}
-kde_quarter_data_regions.ppl <- density(quarter_data_regions_ppp.km, 
-                               sigma=bw.ppl, 
-                               edge=TRUE,
-                               kernel="gaussian")
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 1000, "km")
-kde_quarter_data_regions.bw <- density(quarter_data_regions_ppp.km, 
-                              sigma=bw.diggle, 
-                              edge=TRUE, 
-                              kernel="gaussian")
-par(mfrow=c(1,2))
-plot(kde_quarter_data_regions.bw, main = "bw.diggle")
-plot(kde_quarter_data_regions.ppl, main = "bw.ppl")
-```
-
-```{r}
-par(mfrow=c(2,2), mar=c(1, 1, 1, 1), cex=0.5)
-plot(density(quarter_data_regions_ppp.km, 
-             sigma=bw.ppl, 
-             edge=TRUE, 
-             kernel="gaussian"), 
-     main="Gaussian")
-plot(density(quarter_data_regions_ppp.km, 
-             sigma=bw.ppl, 
-             edge=TRUE, 
-             kernel="epanechnikov"), 
-     main="Epanechnikov")
-plot(density(quarter_data_regions_ppp.km, 
-             sigma=bw.ppl, 
-             edge=TRUE, 
-             kernel="quartic"), 
-     main="Quartic")
-plot(density(quarter_data_regions_ppp.km, 
-             sigma=bw.ppl, 
-             edge=TRUE, 
-             kernel="disc"), 
-     main="Disc")
-```
-
-```{r}
-quarter_data_regions_600 <- density(quarter_data_regions_ppp.km, sigma=0.6, edge=TRUE, kernel="gaussian")
-plot(quarter_data_regions_600)
-```
-
-```{r}
-kde_quarter_data_regions_adaptive <- adaptive.density(quarter_data_regions_ppp.km, method="kernel")
-plot(kde_quarter_data_regions_adaptive)
-```
-
-```{r}
-par(mfrow=c(1,2))
-plot(kde_quarter_data_regions.bw, main = "Fixed Bandwidth")
-plot(kde_quarter_data_regions_adaptive, main = "Adaptive Bandwidth")
-```
-
-```{r}
-kde_quarter_data_regions_bw_raster <- raster(kde_quarter_data_regions.bw)
-projection(kde_quarter_data_regions_bw_raster) <- CRS("+init=EPSG:3414")
-kde_quarter_data_regions_bw_raster
-```
-
-```{r}
-tm_shape(kde_quarter_data_regions_bw_raster) + 
-  tm_raster("layer", palette = "viridis") +
-  tm_layout(
-    legend.position = c("right", "bottom"),
-    frame = FALSE
-  )
-```
-
-```{r}
-clarkevans.test(quarter_data_regions_ppp.km, correction="none", clipregion="regions_owin", alternative="clustered", nsim=99)
-```
-
-##### **2.5.1.2 Second-order Spatial Point Patterns Analysis**
-
-```{r}
-G_CK = Gest(quarter_data_regions_ppp, correction = "border")
-plot(G_CK, xlim=c(0,500))
-```
-
-------------------------------------------------------------------------
-
-```{r}
-# Example: Calculate KDE for Q1 2021
-kde_2021_Q1 <- calculate_kde(acled_sf, 2021, 1)
-
-# Visualize the KDE using tmap
-tm_shape(kde_2021_Q1) +
-  tm_raster(palette = "-RdBu", title = "KDE (Q1 2021)", alpha = 0.7) +
-  tm_layout(main.title = "Quarterly KDE for Armed Conflicts in Myanmar (Q1 2021)",
-            main.title.position = "center")
-```
-
-```{r}
-# Loop through each year and quarter
-years <- unique(acled_sf$year)
-quarters <- 1:4
-
-for (yr in years) {
-  for (qtr in quarters) {
-    # Calculate KDE
-    kde_result <- calculate_kde(acled_sf, yr, qtr)
-    
-    # Plot KDE
-    print(
-      tm_shape(kde_result) +
-        tm_raster(palette = "-RdBu", title = paste("KDE (Q", qtr, yr, ")", sep=" "), alpha = 0.7) +
-        tm_layout(main.title = paste("Quarterly KDE for Armed Conflicts in Myanmar (Q", qtr, yr, ")", sep=" "),
-                  main.title.position = "center")
-    )
-  }
-}
-```
-
-```{r}
-# Save KDE as a raster file
-raster::writeRaster(kde_2021_Q1, "KDE_2021_Q1.tif")
-```
