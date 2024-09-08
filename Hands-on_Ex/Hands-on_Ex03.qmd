@@ -19,6 +19,7 @@ execute:
   echo: true
   warning: false
   freeze: true
+  cache: true
 ---
 
 ## **3.1 Exercise Overview**
@@ -378,7 +379,9 @@ bw.ppl(childcareSG_ppp.km)
 bw.diggle(childcareSG_ppp.km)
 ```
 
-*Recommendation:* 1. Baddeley et. (2016) suggested the use of the *bw.ppl()* algorithm because in ther experience it tends to produce the more appropriate values when the pattern consists predominantly of tight clusters.
+*Recommendation:*
+
+1.  Baddeley et. (2016) suggested the use of the *bw.ppl()* algorithm because from their experience it tends to produce the more appropriate values when the pattern consists predominantly of tight clusters.
 
 2.  But they also insist that if the purpose of once study is to detect a single tight cluster in the midst of random noise then the *bw.diggle()* method seems to work best.
 
