@@ -1,0 +1,123 @@
+---
+title: "In Class exercise 4"
+author: "Brian Lim"
+date: "September 9, 2024"
+date-modified: "last-modified"
+categories:
+  - Analysis
+  - R
+  - sf
+  - tidyverse
+format: html
+editor: visual
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
+  cache: true
+---
+
+## **4.0 Overview**
+
+A spatio-temporal point process (also called space-time or spatial-temporal point process) is a random collection of points, where each point represents the time and location of an event. Examples of events include incidence of disease, sightings or births of a species, or the occurrences of fires, earthquakes, lightning strikes, tsunamis, or volcanic eruptions.
+
+The analysis of spatio-temporal point patterns is becoming increasingly necessary, given the rapid emergence of geographically and temporally indexed data in a wide range of fields. Several spatio-temporal point patterns analysis methods have been introduced and implemented in R in the last ten years. This chapter shows how various R packages can be combined to run a set of spatio-temporal point pattern analyses in a guided and intuitive way. A real world forest fire events in Kepulauan Bangka Belitung, Indonesia from 1st January 2023 to 31st December 2023 is used to illustrate the methods, procedures and interpretations.
+
+## **4.1 Learning Outcome**
+
+### **4.1.1 The research questions**
+
+The specific question we would like to answer is:
+
+-   are the locations of forest fire in Kepulauan Bangka Belitung spatial and spatio-temporally independent?
+
+-   if the answer is NO, where and when the observed forest fire locations tend to cluster?
+
+### **4.1.2 The data**
+
+For the purpose of this exercise, two data sets are used, they are:
+
+-   forestfires, a csv file provides locations of forest fire detected from the Moderate Resolution Imaging Spectroradiometer (MODIS) sensor data. The data are downloaded from [Fire Information for Resource Management System](https://firms.modaps.eosdis.nasa.gov/download/). For the purpose of this exercise, only forest fires within Kepulauan Bangka Belitung will be used.
+
+-   Kepulauan_Bangka_Belitung, an ESRI shapefile showing the sub-district (i.e. [kelurahan](https://en.wikipedia.org/wiki/Villages_of_Indonesia)) boundary of Kepulauan Bangka Belitung. The data set was downloaded from [Indonesia Geospatial](https://www.indonesia-geospasial.com/2023/05/download-shapefile-batas-administrasi.html) portal. The original data covers the whole Indonesia. For the purpose of this exercise, only sub-districts within Kepulauan Bangka Belitung are extracted.
+
+## **4.2 Installing and Loading the R packages**
+
+For the purpose of this study, five R packages will be used. They are:
+
+-   rgdal for importing geospatial data in GIS file format such as shapefile into R and save them as Spatial\*DataFrame,
+
+-   maptools for converting Spatial\* object into ppp object,
+
+-   raster for handling raster data in R,
+
+-   sparr provides functions to estimate fixed and adaptive kernel-smooth spatial relative risk surfaces via the density-ratio method and perform subsequent inferences,
+
+-   spatstat for performing Spatial Point Patterns Analysis such as kcross, Lcross, etc., and
+
+-   tmap for producing cartographic quality thematic maps.
+
+```{r}
+pacman::p_load(sf, raster, spatstat, sparr, tmap, tidyverse)
+```
+
+## **4.3 Importing data into R**
+
+```{r}
+kbb_sf <- st_read(dsn = "data/In-class_Ex04", 
+                  layer = "Kepulauan_Bangka_Belitung") %>%
+  st_union() %>%
+  st_zm(drop = TRUE, what = "ZM") %>% # dropping the Z-value
+  st_transform(crs = 32748)
+```
+
+```{r}
+summary(kbb_sf)
+```
+
+```{r}
+kbb_owin <- as.owin(kbb_sf)
+kbb_owin
+```
+
+TO ensure that the output is an owin object
+```{r}
+class(kbb_owin)
+```
+
+## **4.4 Importing and Preparing Forest Fire data**
+
+Next we will import the forest data set into R:
+```{r}
+fire_sf <- read_csv("data/In-class_Ex04/forestfires.csv") %>%
+  st_as_sf(coords = c("longitude", "latitude"), 
+           crs = 4326) %>%
+  st_transform(crs = 32748)
+```
+Because **ppp** object only accept numerical or character as mark. The code below is used to transform
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
