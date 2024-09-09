@@ -63,7 +63,7 @@ pacman::p_load(sf, raster, spatstat, sparr, tmap, tidyverse)
 ```
 
 ## **4.3 Importing data into R**
-
+### **4.3.1 Importing and Preparing Forest Fire shapeful**
 ```{r}
 kbb_sf <- st_read(dsn = "data/In-class_Ex04", 
                   layer = "Kepulauan_Bangka_Belitung") %>%
@@ -75,18 +75,18 @@ kbb_sf <- st_read(dsn = "data/In-class_Ex04",
 ```{r}
 summary(kbb_sf)
 ```
-
+Furthermore we create an `owin` object from the `sf` data type
 ```{r}
 kbb_owin <- as.owin(kbb_sf)
 kbb_owin
 ```
 
-TO ensure that the output is an owin object
+To ensure that the output is an `owin` object
 ```{r}
 class(kbb_owin)
 ```
 
-## **4.4 Importing and Preparing Forest Fire data**
+### **4.3.2 Importing and Preparing Forest Fire data**
 
 Next we will import the forest data set into R:
 ```{r}
@@ -95,15 +95,74 @@ fire_sf <- read_csv("data/In-class_Ex04/forestfires.csv") %>%
            crs = 4326) %>%
   st_transform(crs = 32748)
 ```
-Because **ppp** object only accept numerical or character as mark. The code below is used to transform
+Because **ppp** object only accept numerical or character as mark. The code below is used to transform **acq_date** data type to numeric.
 
+```{r}
+fire_sf <- fire_sf %>%
+  mutate("DayofYear" = yday(acq_date)) %>%
+  mutate("Month_num" = month(acq_date)) %>%
+  mutate("Month_fac" = month(acq_date, label = TRUE, abbr = FALSE))
 
+summary(fire_sf)
+```
+## **4.4 Visualising the Fire Points**
+```{r}
+tm_shape(kbb_sf)+
+  tm_polygons() +
+  tm_shape(fire_sf) +
+  tm_dots()
+```
+We will then prepare a point symbol map showing the monthly geographic distribution of forest fires in 2023. The map should look similar to the figure below.
+```{r}
+tm_shape(kbb_sf)+
+  tm_polygons()+
+  tm_shape(fire_sf)+
+  tm_dots(size = 0.1)+
+  tm_facets(by="Month_fac", free.coords = FALSE, drop.units = FALSE)
+```
+## **4.5 Extracting forest fire by month**
 
+The code chunk below is used to remove the unwanted fields from the `fire_sf` sf data frame. This is because as.ppp() only need the mark field and geometry field from the input sf data frame.
+```{r}
+fire_month <- fire_sf %>%
+  select(Month_num)
+```
 
+### **4.5.1 Creating ppp**
+The code chunk below is used to derive a ppp object called fire_month from fire_month sf data frame
+```{r}
+fire_month_ppp <- as.ppp(fire_month)
+fire_month_ppp
+```
+### **4.5.2 Creating Owin object**
+The code chunk below is used to combine origin_am_ppp and am_owin_objects into one.
+```{r}
+fire_month_owin <- fire_month_ppp[kbb_owin]
+summary(fire_month_owin)
+```
+Computing Spatio-Temporal KDE
+Next, `spattemp.density()` of `sparr` package is used to compute the STKDE
+```{r}
+st_kde <- spattemp.density(fire_month_owin)
+summary(st_kde)
+```
+In the code chunk below, `plot()` of R base is used to get the KDE for between July 2023 - December 2023
+```{r}
+tims <- c(7, 8, 9, 10, 11, 12)
+par(mfcol=c(2, 3))
+for(i in tims){
+  plot(st_kde, i, 
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("KDE at month", i))
+}
+```
+```{r}
+kde_yday <- spattemp.density(
+  fire_yday_owin)
 
-
-
-
+summary(kde_yday)
+```
 
 
 
