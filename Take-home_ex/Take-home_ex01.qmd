@@ -207,7 +207,6 @@ To confine analysis to a geographical area, convert the `SpatialPolygon` object 
 regions_owin <- as.owin(regions_sf)
 
 year_data_regions_ppp = year_data_ppp_jit[regions_owin]
-summary(year_data_regions_ppp)
 ```
 
 ```{r}
