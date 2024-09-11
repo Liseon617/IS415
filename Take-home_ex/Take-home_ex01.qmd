@@ -55,7 +55,7 @@ As readr, tidyr and dplyr are part of tidyverse package. The code chunk below wi
 To install and load these packages into the R environment, we use the `p_load` function from the `pacman` package:
 
 ```{r}
-pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer)
+pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, lubridate, ggplot2, parallel)
 ```
 
 ## **1.4 Importing Data into R**
@@ -167,7 +167,7 @@ map(events, ~ {
 
 ## **1.5 Determining KDE Layer**
 
-#### **1.5.1 Choosing sample dataset**
+### **1.5.1 Choosing Sample Dataset**
 
 In this section, we focus on determining the appropriate Kernel Density Estimate (KDE) layer format for analyzing the spatial distribution of events across different quarters and event types. KDE is a fundamental tool for identifying patterns of spatial clustering and dispersion, providing a smooth surface that highlights areas of high and low event concentration. The selection of an appropriate bandwidth is crucial, as it influences the level of detail and accuracy in the density estimate. By standardizing the KDE layer format, we aim to ensure consistency and comparability throughout the analysis, particularly using the **Violence against civilians** event type as a reference for refining our approach.
 
@@ -199,7 +199,7 @@ year_data_ppp_jit <- rjitter(year_data_ppp,
 any(duplicated(year_data_ppp_jit))
 ```
 
-#### **1.5.2 Creating owin object**
+### **1.5.2 Creating Owin Object**
 
 To confine analysis to a geographical area, convert the `SpatialPolygon` object to an `owin` object of `spatstat`:
 
@@ -219,7 +219,7 @@ Due to the size of Myanmar, rescaling would need to be done:
 year_data_regions_ppp.km <- rescale.ppp(year_data_regions_ppp, 50000, "km")
 ```
 
-#### **1.5.3 Working with different automatic badwidth methods**
+### **1.5.3 Working With Different Automatic Bandwidth Methods**
 
 The `density()` function from the `spatstat` package computes the kernel density estimate for a given set of spatial point events, providing insights into the spatial distribution of those events.
 
@@ -307,7 +307,7 @@ While the standard error (SE) of the density estimate provides valuable insight 
 Consideration of Standard Error: While the standard error (SE) of the density estimate provides valuable insight into the uncertainty associated with each density estimate, it is not the primary focus of this analysis. The shape of the density estimate, rather than its absolute value, is more critical when analyzing spatial patterns. Consequently, the SE was not used as a key criterion for bandwidth selection in this analysis.
 :::
 
-#### **1.5.4 Final Bandwidth Selection**
+### **1.5.4 Final Bandwidth Selection**
 
 Upon the exploration of various fixed bandwidth selection methods for computing KDE vales, and subsequent plotting of the respective KDE estimates, their distributions and associated standard errors, we will now select the KDE bandwidth to be used in our analysis.
 
@@ -318,7 +318,7 @@ We landed on the `bw_scott` method for further analysis. This is because:
 
 Since we have chosen to use `bw_scott` method, now we will plot the KDE layer using this method for further analysis.
 
-##### **1.5.4.1 Working with different kernel methods**
+#### **1.5.4.1 Working With Different Kernel Methods**
 
 Beyond the Gaussian kernel, three other kernels can be used to compute KDE: - Epanechnikov - Quartic - Disc
 
@@ -377,7 +377,7 @@ After comparing the two approaches for kernel density estimation, Fixed Bandwidt
 Given the goals of our analysis, which emphasize consistency and smoothness over high local sensitivity, the Fixed Bandwidth approach strikes a better balance between capturing spatial trends and avoiding over-complication.
 :::
 
-### **1.6 Year 2021**
+### **Year 2021**
 
 #### **Quarter 1**
 
@@ -396,13 +396,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q1_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q1_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -427,13 +425,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q1_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q1_SD_quarter_data_regions_ppp , 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -458,13 +454,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q1_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q1_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -489,13 +483,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q1_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q1_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -524,13 +516,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q2_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q2_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -555,13 +545,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q2_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q2_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -586,13 +574,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q2_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q2_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -617,13 +603,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q2_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q2_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -652,13 +636,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q3_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q3_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -683,13 +665,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q3_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q3_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -714,13 +694,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q3_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q3_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -745,13 +723,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q3_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q3_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -780,13 +756,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q4_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q4_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -811,13 +785,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q4_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q4_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -842,13 +814,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q4_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q4_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -873,13 +843,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2021_Q4_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2021_Q4_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -891,7 +859,7 @@ plot(density(quarter_data_regions_ppp.km,
 ```
 :::
 
-### **1.7 Year 2022**
+### **Year 2022**
 
 #### **Quarter 1**
 
@@ -910,13 +878,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q1_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q1_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -941,13 +907,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q1_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q1_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -972,13 +936,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q1_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q1_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1003,13 +965,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q1_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q1_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1038,13 +998,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q2_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q2_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1069,13 +1027,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q2_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q2_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1100,13 +1056,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q2_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q2_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1131,13 +1085,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q2_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q2_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1166,13 +1118,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q3_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q3_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1197,13 +1147,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q3_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q3_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1228,13 +1176,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q3_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q3_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1259,13 +1205,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q3_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q3_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1294,13 +1238,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q4_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q4_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1325,13 +1267,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q4_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q4_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1356,13 +1296,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q4_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q4_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1387,13 +1325,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2022_Q4_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2022_Q4_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1405,7 +1341,7 @@ plot(density(quarter_data_regions_ppp.km,
 ```
 :::
 
-### **1.8 Year 2023**
+### **Year 2023**
 
 #### **Quarter 1**
 
@@ -1424,13 +1360,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q1_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q1_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1455,13 +1389,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q1_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q1_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1486,13 +1418,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q1_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q1_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1517,13 +1447,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q1_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q1_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1552,13 +1480,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q2_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q2_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1583,13 +1509,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q2_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q2_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1614,13 +1538,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q2_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q2_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1645,13 +1567,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q2_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q2_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1680,13 +1600,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q3_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q3_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1711,13 +1629,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q3_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q3_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1742,13 +1658,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q3_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q3_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1773,13 +1687,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q3_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q3_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1808,13 +1720,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q4_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q4_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1839,13 +1749,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q4_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q4_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1870,13 +1778,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q4_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q4_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1901,13 +1807,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2023_Q4_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2023_Q4_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1919,7 +1823,7 @@ plot(density(quarter_data_regions_ppp.km,
 ```
 :::
 
-### **1.9 Year 2024**
+### **Year 2024**
 
 #### **Quarter 1**
 
@@ -1938,13 +1842,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2024_Q1_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2024_Q1_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -1969,13 +1871,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2024_Q1_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2024_Q1_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -2000,13 +1900,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2024_Q1_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2024_Q1_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -2031,13 +1929,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2024_Q1_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2024_Q1_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -2066,13 +1962,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2024_Q2_ER_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2024_Q2_ER_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -2097,13 +1991,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2024_Q2_SD_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2024_Q2_SD_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -2128,13 +2020,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2024_Q2_B_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2024_Q2_B_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -2159,13 +2049,11 @@ quarter_data_ppp_jit <- rjitter(quarter_data_ppp,
                              retry=TRUE, 
                              nsim=1, 
                              drop=TRUE)
-
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
 ```
 
 ```{r,fig.width=12, fig.height=12}
-quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
-quarter_data_regions_ppp.km <- rescale.ppp(quarter_data_regions_ppp, 50000, "km")
+my_2024_Q2_VAC_quarter_data_regions_ppp = quarter_data_ppp_jit[regions_owin]
+quarter_data_regions_ppp.km <- rescale.ppp(my_2024_Q2_VAC_quarter_data_regions_ppp, 50000, "km")
 
 bw_scott <- bw.scott(quarter_data_regions_ppp.km)
 
@@ -2176,3 +2064,778 @@ plot(density(quarter_data_regions_ppp.km,
      main = "2024 Q2 - Violence against civilians")
 ```
 :::
+
+## **1.6 2nd-Order Spatial Point Patterns Analysis**
+
+### **1.6.1 Overview**
+
+To perform a Second-order Spatial Point Patterns Analysis, we utilize the G, F, K, and L functions of the `spatstat` package in R. Each of these functions analyzes different aspects of spatial point patterns. Given the nature of the dataset, it is crucial to choose an analysis that best captures the complexity of spatial distributions for conflict events. Each of the spatial functions (G, F, K, and L) has its strengths, but here’s how they align with conflict data analysis, with a particular focus on the G-function:
+
+1.  **G-Function (Nearest Neighbor Distribution)**:
+
+    -   **Detecting local clustering**: The G-function focuses on the distribution of nearest neighbors, making it particularly useful for detecting local clustering of events. In the civil war context, where conflict events often cluster in specific regions or around key areas of interest (e.g., cities, roads, military bases), the G-function can quickly and efficiently help identify **hotspots** of violence. Its simplicity and computational efficiency make it an excellent choice for analyzing localized patterns of violence, especially when time and resources are limited.
+
+2.  **F-Function (Empty Space Function)**:
+
+    -   **Detecting global regularity**: The F-function measures the distance from random locations to the nearest event. While it can offer insights into the global spread of events, this function is less relevant for conflict analysis because it emphasizes regularity over clustering, which is not typical in conflict zones. Conflict events are rarely evenly spaced, making the F-function less suited for this kind of data.
+
+3.  **K-Function (Ripley’s K-Function)**:
+
+    -   **Multi-scale clustering**: The K-function is valuable for analyzing clustering at different spatial scales, especially in hierarchical conflict scenarios where regional and local clusters coexist. However, the K-function's multi-scale nature comes with a higher computational cost, making it less practical for when large datasets are involved. While informative, its complexity and runtime can be a drawback.
+
+4.  **L-Function (Transformed K-Function)**:
+
+    -   **Simplifying K-function results**: The L-function is a linearized version of the K-function and offers more intuitive interpretations of clustering versus dispersion. However, like the K-function, it involves significant computation time, and its added complexity may not always justify its use, especially when the G-function already provides key insights into local clustering.
+
+Given the nature of the civil war event data, where localized patterns and hotspots of violence are of primary concern, the **G-function** emerges as the most suitable tool for analysis. Its ability to efficiently detect **local clustering** while being computationally lightweight makes it a clear choice. While both **K-function** and **L-functions** offer multi-scale insights, they come at the cost of significant computation time, which may not be necessary for this analysis.
+
+The **G-function** provides a focused and practical approach to understanding the spatial distribution of conflict events, making it the **preferred choice** in this context.
+
+### **Year 2021**
+
+#### **Quarter 1**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2021_Q1_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q1 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q1_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q1 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2021_Q1_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q1 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q1_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q1 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2021_Q1_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q1 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q1_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q1 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2021_Q1_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q1 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q1_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q1 Violence Against Civilians")
+```
+:::
+
+#### **Quarter 2**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2021_Q2_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q2 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q2_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q2 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2021_Q2_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q2 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q2_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q2 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2021_Q2_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q2 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q2_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q2 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2021_Q2_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q2 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q2_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q2 Violence Against Civilians")
+```
+:::
+
+#### **Quarter 3**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2021_Q3_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q3 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q3_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q3 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2021_Q3_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q3 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q3_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q3 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2021_Q3_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q3 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q3_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q3 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2021_Q3_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q3 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q3_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q3 Violence Against Civilians")
+```
+:::
+
+#### **Quarter 4**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2021_Q4_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q4 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q4_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q4 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2021_Q4_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q4 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q4_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q4 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2021_Q4_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q4 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q4_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q4 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2021_Q4_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2021 Q4 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2021_Q4_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2021 Q4 Violence Against Civilians")
+```
+:::
+
+### **Year 2022**
+
+#### **Quarter 1**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2022_Q1_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q1 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q1_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q1 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2022_Q1_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q1 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q1_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q1 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2022_Q1_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q1 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q1_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q1 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2022_Q1_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q1 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q1_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q1 Violence Against Civilians")
+```
+:::
+
+#### **Quarter 2**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2022_Q2_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q2 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q2_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q2 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2022_Q2_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q2 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q2_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q2 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2022_Q2_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q2 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q2_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q2 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2022_Q2_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q2 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q2_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q2 Violence Against Civilians")
+```
+:::
+
+#### **Quarter 3**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2022_Q3_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q3 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q3_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q3 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2022_Q3_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q3 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q3_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q3 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2022_Q3_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q3 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q3_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q3 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2022_Q3_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q3 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q3_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q3 Violence Against Civilians")
+```
+:::
+
+#### **Quarter 4**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2022_Q4_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q4 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q4_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q4 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2022_Q4_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q4 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q4_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q4 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2022_Q4_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q4 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q4_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q4 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2022_Q4_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2022 Q4 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2022_Q4_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2022 Q4 Violence Against Civilians")
+```
+:::
+
+### **Year 2023**
+
+#### **Quarter 1**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2023_Q1_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q1 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q1_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q1 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2023_Q1_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q1 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q1_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q1 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2023_Q1_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q1 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q1_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q1 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2023_Q1_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q1 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q1_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q1 Violence Against Civilians")
+```
+:::
+
+#### **Quarter 2**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2023_Q2_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q2 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q2_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q2 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2023_Q2_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q2 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q2_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q2 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2023_Q2_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q2 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q2_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q2 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2023_Q2_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q2 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q2_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q2 Violence Against Civilians")
+```
+:::
+
+#### **Quarter 3**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2023_Q3_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q3 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q3_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q3 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2023_Q3_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q3 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q3_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q3 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2023_Q3_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q3 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q3_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q3 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2023_Q3_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q3 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q3_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q3 Violence Against Civilians")
+```
+:::
+
+#### **Quarter 4**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2023_Q4_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q4 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q4_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q4 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2023_Q4_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q4 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q4_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q4 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2023_Q4_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q4 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q4_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q4 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2023_Q4_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2023 Q4 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2023_Q4_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2023 Q4 Violence Against Civilians")
+```
+:::
+
+### **Year 2024**
+
+#### **Quarter 1**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2024_Q1_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2024 Q1 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2024_Q1_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2024 Q1 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2024_Q1_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2024 Q1 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2024_Q1_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2024 Q1 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2024_Q1_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2024 Q1 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2024_Q1_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2024 Q1 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2024_Q1_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2024 Q1 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2024_Q1_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2024 Q1 Violence Against Civilians")
+```
+:::
+
+#### **Quarter 2**
+
+::: panel-tabset
+## Explosions/Remote violence
+
+```{r}
+g_func <- Gest(my_2024_Q2_ER_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2024 Q2 Explosions/Remote violence")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2024_Q2_ER_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2024 Q2 Explosions/Remote violence")
+```
+
+## Strategic developments
+
+```{r}
+g_func <- Gest(my_2024_Q2_SD_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2024 Q2 Strategic developments ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2024_Q2_SD_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2024 Q2 Strategic developments")
+```
+
+## Battles
+
+```{r}
+g_func <- Gest(my_2024_Q2_B_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2024 Q2 Battles ")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2024_Q2_B_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2024 Q2 Battles")
+```
+
+## Violence against civilians
+
+```{r}
+g_func <- Gest(my_2024_Q2_VAC_quarter_data_regions_ppp, correction="border")
+plot(g_func, main="G-Function - 2024 Q2 Violence against civilians")
+```
+
+```{r}
+G_CK.csr <- envelope(my_2024_Q2_VAC_quarter_data_regions_ppp, Gest, nsim = 99, correction="all", parallel = parallel::detectCores())
+plot(G_CK.csr, main = "G-Function with CSR - 2024 Q2 Violence Against Civilians")
+```
+:::
+## **1.6 Determining Spatio-Temporal KDE Layer**
+
+### **1.6.1 Choosing sample Dataset**
+```{r}
+temporal_acled_sf <- acled_sf %>%
+  mutate(event_date = dmy(event_date)) %>%
+  mutate(quarter = paste0(year, " Q", quarter(event_date))) %>%
+  mutate(DayofYear = yday(event_date)) %>%
+  mutate(Month_num = month(event_date)) %>%
+  mutate(Month_fac = month(event_date, 
+                           label = TRUE, 
+                           abbr = FALSE))
+```
