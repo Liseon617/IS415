@@ -55,7 +55,7 @@ As readr, tidyr and dplyr are part of tidyverse package. The code chunk below wi
 To install and load these packages into the R environment, we use the `p_load` function from the `pacman` package:
 
 ```{r}
-pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, lubridate, ggplot2, parallel)
+pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, lubridate, ggplot2, parallel, sparr)
 ```
 
 ## **1.4 Importing Data into R**
@@ -2126,12 +2126,9 @@ par(mfrow=c(4,4))
 
 # Loop through each dataset and create the KDE plots
 for (i in seq_along(er_datasets)) {
-  invisible(
-    G_CK.csr <- suppressMessages(
-      envelope(er_datasets[[i]], Gest, nsim = 10, correction="all", parallel = parallel::detectCores())
+    G_CK.csr <- envelope(er_datasets[[i]], Gest, nsim = 50, correction="all", parallel = parallel::detectCores()
     )
-  )
-  plot(G_CK.csr, xlim=c(0,10000), main= paste0(er_labels[[i]]))
+  plot(G_CK.csr, xlim=c(0,10000), main= er_labels[[i]])
 }
 ```
 
@@ -2169,12 +2166,8 @@ par(mfrow=c(4,4))
 
 # Loop through each dataset and create the KDE plots
 for (i in seq_along(er_datasets)) {
-  invisible(
-    G_CK.csr <- suppressMessages(
-      envelope(er_datasets[[i]], Gest, nsim = 10, parallel = parallel::detectCores())
-    )
-  )
-  plot(G_CK.csr, xlim=c(0,10000), main= paste0(er_labels[[i]]))
+    G_CK.csr <- envelope(er_datasets[[i]], Gest, nsim = 50, parallel = parallel::detectCores())
+  plot(G_CK.csr, xlim=c(0,10000), main= er_labels[[i]])
 }
 ```
 
@@ -2212,12 +2205,8 @@ par(mfrow=c(4,4))
 
 # Loop through each dataset and create the KDE plots
 for (i in seq_along(er_datasets)) {
-  invisible(
-    G_CK.csr <- suppressMessages(
-      envelope(er_datasets[[i]], Gest, nsim = 10, parallel = parallel::detectCores())
-    )
-  )
-  plot(G_CK.csr, xlim=c(0,10000), main= paste0(er_labels[[i]]))
+    G_CK.csr <- envelope(er_datasets[[i]], Gest, nsim = 50, parallel = parallel::detectCores())
+  plot(G_CK.csr, xlim=c(0,10000), main= er_labels[[i]])
 }
 ```
 
@@ -2255,34 +2244,437 @@ par(mfrow=c(4,4))
 
 # Loop through each dataset and create the KDE plots
 for (i in seq_along(er_datasets)) {
-  invisible(
-    G_CK.csr <- suppressMessages(
-      envelope(er_datasets[[i]], Gest, nsim = 10, parallel = parallel::detectCores())
-    )
-  )
-  plot(G_CK.csr, xlim=c(0,10000), main= paste0(er_labels[[i]]))
+    G_CK.csr <- envelope(er_datasets[[i]], Gest, nsim = 50, parallel = parallel::detectCores())
+  plot(G_CK.csr, xlim=c(0,10000), main= er_labels[[i]])
 }
 ```
 
-### **1.6.2 Conclusion**
+::: {.callout-tip title="Note"}
+**Quarter-wise analysis for all event types:**
+
+-   **2021 Q1**: There is a strong deviation from the CSR, where the empirical G-function lies well above the envelope. This suggests clustering, particularly over the distances considered.
+
+-   **2021 Q2 to 2024 Q2**: Most quarters show a more stable pattern with the empirical G-function generally falling within the simulation envelope or only slightly above it at different distances. This suggests that there is no significant deviation from CSR, implying randomness in the spatial arrangement of points during most of these quarters. In some cases, the curve slightly rises above the envelope, which could indicate mild clustering.
+
+**General Trend:**
+Across the quarters, the empirical G-function mostly lies within the CSR envelope, indicating a spatial point pattern that does not strongly deviate from randomness. The early quarters show more clustering, but later quarters become more consistent with random spatial distribution.
+:::
+
 
 ## **1.7 Determining Spatio-Temporal KDE Layer**
 
-### **1.7.1 Choosing sample Dataset**
+### **1.7.1 Visualising geographic distribution of events by month**
 ```{r}
 temporal_acled_sf <- acled_sf %>%
-  mutate(event_date = dmy(event_date)) %>%
-  mutate(quarter = paste0(year, " Q", quarter(event_date))) %>%
-  mutate(DayofYear = yday(event_date)) %>%
-  mutate(Month_num = month(event_date)) %>%
-  mutate(Month_fac = month(event_date, 
-                           label = TRUE, 
-                           abbr = FALSE))
+  mutate(q = quarter(event_date))
 ```
 
 ```{r}
 tm_shape(regions_sf)+
   tm_polygons() +
 tm_shape(temporal_acled_sf) +
-  tm_dots()
+  tm_dots() +
+tm_facets(by="quarter", 
+            free.coords=FALSE, 
+            drop.units = TRUE)
 ```
+### **1.7.2 Deriving Quarterly Spatio-Temporal KDE Layers**
+
+#### **1.7.2.1 Explosions/Remote violence**
+```{r}
+Example <- "Explosions/Remote violence"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+::: panel-tabset
+## **Year 2021**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2021 Q",i))
+}
+```
+
+## **Year 2022**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2022 Q",i))
+}
+```
+
+## **Year 2023**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2023 Q",i))
+}
+```
+
+## **Year 2024**
+```{r, fig.width=12, fig.height=6}
+acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 2)
+par(mfrow=c(1,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2024 Q",i))
+}
+```
+:::
+
+#### **1.7.2.2 Strategic developments**
+```{r}
+Example <- "Strategic developments"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+::: panel-tabset
+## **Year 2021**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2021 Q",i))
+}
+```
+
+## **Year 2022**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2022 Q",i))
+}
+```
+
+## **Year 2023**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2023 Q",i))
+}
+```
+
+## **Year 2024**
+```{r, fig.width=12, fig.height=6}
+acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 2)
+par(mfrow=c(1,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2024 Q",i))
+}
+```
+:::
+
+#### **1.7.2.3 Battles**
+```{r}
+Example <- "Battles"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+::: panel-tabset
+## **Year 2021**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2021 Q",i))
+}
+```
+
+## **Year 2022**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2022 Q",i))
+}
+```
+
+## **Year 2023**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2023 Q",i))
+}
+```
+
+## **Year 2024**
+```{r, fig.width=12, fig.height=6}
+acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 2)
+par(mfrow=c(1,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2024 Q",i))
+}
+```
+:::
+
+#### **1.7.2.4 Explosions/Remote violence**
+```{r}
+Example <- "Explosions/Remote violence"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+::: panel-tabset
+## **Year 2021**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2021 Q",i))
+}
+```
+
+## **Year 2022**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2022 Q",i))
+}
+```
+
+## **Year 2023**
+```{r, fig.width=12, fig.height=12}
+acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 3, 2, 4)
+par(mfcol=c(2,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2023 Q",i))
+}
+```
+
+## **Year 2024**
+```{r, fig.width=12, fig.height=6}
+acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
+st_kde <- spattemp.density(acled_spatio_ppp_owin)
+
+tims <- c(1, 2)
+par(mfrow=c(1,2))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2024 Q",i))
+}
+```
+:::
+## **1.8 2nd-Order Spatio-temporal Point Patterns Analysis**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
