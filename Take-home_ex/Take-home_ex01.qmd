@@ -55,7 +55,7 @@ As readr, tidyr and dplyr are part of tidyverse package. The code chunk below wi
 To install and load these packages into the R environment, we use the `p_load` function from the `pacman` package:
 
 ```{r}
-pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, lubridate, ggplot2, parallel, sparr)
+pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, lubridate, ggplot2, parallel, sparr, magick)
 ```
 
 ## **1.4 Importing Data into R**
@@ -2312,7 +2312,18 @@ for(i in tims){
        main=paste("KDE at 2021 Q",i))
 }
 ```
-
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/ER/kde_2021_ER", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2021 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 ## **Year 2022**
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
@@ -2327,7 +2338,18 @@ for(i in tims){
        main=paste("KDE at 2022 Q",i))
 }
 ```
-
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/ER/kde_2022_ER", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2022 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 ## **Year 2023**
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
@@ -2342,7 +2364,18 @@ for(i in tims){
        main=paste("KDE at 2023 Q",i))
 }
 ```
-
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/ER/kde_2023_ER", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2023 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 ## **Year 2024**
 ```{r, fig.width=12, fig.height=6}
 acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
@@ -2357,7 +2390,26 @@ for(i in tims){
        main=paste("KDE at 2024 Q",i))
 }
 ```
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/ER/kde_2024_ER", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2024 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 :::
+
+```{r}
+# Load images and create a GIF
+kde_images <- list.files("kde_plots/ER/", full.names = TRUE, pattern = ".png")
+image_read(kde_images) %>%
+  image_animate(fps = 2)  # Adjust fps (frames per second) for speed
+```
 
 #### **1.7.2.2 Strategic developments**
 ```{r}
@@ -2391,6 +2443,18 @@ for(i in tims){
        main=paste("KDE at 2021 Q",i))
 }
 ```
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/SD/kde_2021_SD", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2021 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 
 ## **Year 2022**
 ```{r, fig.width=12, fig.height=12}
@@ -2404,6 +2468,18 @@ for(i in tims){
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2022 Q",i))
+}
+```
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/SD/kde_2022_SD", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2022 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
 }
 ```
 
@@ -2421,6 +2497,18 @@ for(i in tims){
        main=paste("KDE at 2023 Q",i))
 }
 ```
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/SD/kde_2023_SD", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2023 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 
 ## **Year 2024**
 ```{r, fig.width=12, fig.height=6}
@@ -2436,7 +2524,26 @@ for(i in tims){
        main=paste("KDE at 2024 Q",i))
 }
 ```
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/SD/kde_2024_SD", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2024 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 :::
+
+```{r}
+# Load images and create a GIF
+kde_images <- list.files("kde_plots/SD/", full.names = TRUE, pattern = ".png")
+image_read(kde_images) %>%
+  image_animate(fps = 2)  # Adjust fps (frames per second) for speed
+```
 
 #### **1.7.2.3 Battles**
 ```{r}
@@ -2470,7 +2577,18 @@ for(i in tims){
        main=paste("KDE at 2021 Q",i))
 }
 ```
-
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/B/kde_2021_B", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2021 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 ## **Year 2022**
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
@@ -2485,7 +2603,18 @@ for(i in tims){
        main=paste("KDE at 2022 Q",i))
 }
 ```
-
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/B/kde_2022_B", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2022 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 ## **Year 2023**
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
@@ -2498,6 +2627,18 @@ for(i in tims){
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2023 Q",i))
+}
+```
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/B/kde_2023_B", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2023 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
 }
 ```
 
@@ -2515,7 +2656,25 @@ for(i in tims){
        main=paste("KDE at 2024 Q",i))
 }
 ```
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/B/kde_2024_B", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2024 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 :::
+```{r}
+# Load images and create a GIF
+kde_images <- list.files("kde_plots/B/", full.names = TRUE, pattern = ".png")
+image_read(kde_images) %>%
+  image_animate(fps = 2)  # Adjust fps (frames per second) for speed
+```
 
 #### **1.7.2.4 Explosions/Remote violence**
 ```{r}
@@ -2549,6 +2708,18 @@ for(i in tims){
        main=paste("KDE at 2021 Q",i))
 }
 ```
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/VAC/kde_2021_VAC", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2021 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 
 ## **Year 2022**
 ```{r, fig.width=12, fig.height=12}
@@ -2564,7 +2735,18 @@ for(i in tims){
        main=paste("KDE at 2022 Q",i))
 }
 ```
-
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/VAC/kde_2022_VAC", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2022 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 ## **Year 2023**
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
@@ -2579,7 +2761,18 @@ for(i in tims){
        main=paste("KDE at 2023 Q",i))
 }
 ```
-
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/VAC/kde_2023_VAC", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2023 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 ## **Year 2024**
 ```{r, fig.width=12, fig.height=6}
 acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
@@ -2594,8 +2787,28 @@ for(i in tims){
        main=paste("KDE at 2024 Q",i))
 }
 ```
+```{r}
+for(i in tims){
+  png(filename = paste0("kde_plots/VAC/kde_2024_VAC", i, ".png"), width = 800, height = 600)
+  
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at 2024 Q",i))
+  # Close the PNG device to save the image
+  dev.off()
+}
+```
 :::
+```{r}
+# Load images and create a GIF
+kde_images <- list.files("kde_plots/VAC/", full.names = TRUE, pattern = ".png")
+image_read(kde_images) %>%
+  image_animate(fps = 2)  # Adjust fps (frames per second) for speed
+```
+
 ## **1.8 2nd-Order Spatio-temporal Point Patterns Analysis**
+
 
 
 
