@@ -165,6 +165,13 @@ map(events, ~ {
 })
 ```
 
+### **1.4.2 Storing key data**
+We will store key data sets intermittently to keep track of key data.
+```{r}
+write_rds(acled_sf, "data/rds/acled_sf.rds")
+write_rds(regions_sf, "data/rds/regions_sf.rds")
+```
+
 ## **1.5 Determining KDE Layer**
 
 ### **1.5.1 Choosing Sample Dataset**
@@ -388,6 +395,9 @@ Given the goals of our analysis, which emphasize consistency and smoothness over
 Example <- "Explosions/Remote violence"
 my_2021_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q1")
+
+write_rds(my_2021_Q1, "data/rds/my_2021_Q1_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q1), st_bbox(my_2021_Q1))
@@ -417,6 +427,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2021_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q1")
+
+write_rds(my_2021_Q1, "data/rds/my_2021_Q1_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q1), st_bbox(my_2021_Q1))
@@ -446,6 +459,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2021_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q1")
+
+write_rds(my_2021_Q1, "data/rds/my_2021_Q1_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q1), st_bbox(my_2021_Q1))
@@ -475,6 +491,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2021_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q1")
+
+write_rds(my_2021_Q1, "data/rds/my_2021_Q1_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q1), st_bbox(my_2021_Q1))
@@ -508,6 +527,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2021_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q2")
+
+write_rds(my_2021_Q2, "data/rds/my_2021_Q2_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q2), st_bbox(my_2021_Q2))
@@ -537,6 +559,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2021_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q2")
+
+write_rds(my_2021_Q2, "data/rds/my_2021_Q2_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q2), st_bbox(my_2021_Q2))
@@ -566,6 +591,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2021_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q2")
+
+write_rds(my_2021_Q2, "data/rds/my_2021_Q2_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q2), st_bbox(my_2021_Q2))
@@ -595,6 +623,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2021_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q2")
+
+write_rds(my_2021_Q2, "data/rds/my_2021_Q2_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q2), st_bbox(my_2021_Q2))
@@ -628,6 +659,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2021_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q3")
+
+write_rds(my_2021_Q3, "data/rds/my_2021_Q3_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q3), st_bbox(my_2021_Q3))
@@ -657,6 +691,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2021_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q3")
+
+write_rds(my_2021_Q3, "data/rds/my_2021_Q3_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q3), st_bbox(my_2021_Q3))
@@ -686,6 +723,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2021_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q3")
+
+write_rds(my_2021_Q3, "data/rds/my_2021_Q3_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q3), st_bbox(my_2021_Q3))
@@ -715,6 +755,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2021_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q3")
+
+write_rds(my_2021_Q3, "data/rds/my_2021_Q3_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q3), st_bbox(my_2021_Q3))
@@ -748,6 +791,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2021_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q4")
+
+write_rds(my_2021_Q4, "data/rds/my_2021_Q4_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q4), st_bbox(my_2021_Q4))
@@ -777,6 +823,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2021_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q4")
+
+write_rds(my_2021_Q4, "data/rds/my_2021_Q4_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q4), st_bbox(my_2021_Q4))
@@ -806,6 +855,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2021_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q4")
+
+write_rds(my_2021_Q4, "data/rds/my_2021_Q4_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q4), st_bbox(my_2021_Q4))
@@ -835,6 +887,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2021_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2021 Q4")
+
+write_rds(my_2021_Q4, "data/rds/my_2021_Q4_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2021_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2021_Q4), st_bbox(my_2021_Q4))
@@ -870,6 +925,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2022_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q1")
+
+write_rds(my_2022_Q1, "data/rds/my_2022_Q1_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q1), st_bbox(my_2022_Q1))
@@ -899,6 +957,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2022_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q1")
+
+write_rds(my_2022_Q1, "data/rds/my_2022_Q1_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q1), st_bbox(my_2022_Q1))
@@ -928,6 +989,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2022_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q1")
+
+write_rds(my_2022_Q1, "data/rds/my_2022_Q1_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q1), st_bbox(my_2022_Q1))
@@ -957,6 +1021,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2022_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q1")
+
+write_rds(my_2022_Q1, "data/rds/my_2022_Q1_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q1), st_bbox(my_2022_Q1))
@@ -990,6 +1057,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2022_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q2")
+
+write_rds(my_2022_Q2, "data/rds/my_2022_Q2_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q2), st_bbox(my_2022_Q2))
@@ -1019,6 +1089,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2022_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q2")
+
+write_rds(my_2022_Q2, "data/rds/my_2022_Q2_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q2), st_bbox(my_2022_Q2))
@@ -1048,6 +1121,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2022_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q2")
+
+write_rds(my_2022_Q2, "data/rds/my_2022_Q2_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q2), st_bbox(my_2022_Q2))
@@ -1077,6 +1153,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2022_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q2")
+
+write_rds(my_2022_Q2, "data/rds/my_2022_Q2_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q2), st_bbox(my_2022_Q2))
@@ -1110,6 +1189,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2022_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q3")
+
+write_rds(my_2022_Q3, "data/rds/my_2022_Q3_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q3), st_bbox(my_2022_Q3))
@@ -1139,6 +1221,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2022_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q3")
+
+write_rds(my_2022_Q3, "data/rds/my_2022_Q3_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q3), st_bbox(my_2022_Q3))
@@ -1168,6 +1253,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2022_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q3")
+
+write_rds(my_2022_Q3, "data/rds/my_2022_Q3_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q3), st_bbox(my_2022_Q3))
@@ -1197,6 +1285,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2022_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q3")
+
+write_rds(my_2022_Q3, "data/rds/my_2022_Q3_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q3), st_bbox(my_2022_Q3))
@@ -1230,6 +1321,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2022_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q4")
+
+write_rds(my_2022_Q4, "data/rds/my_2022_Q4_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q4), st_bbox(my_2022_Q4))
@@ -1259,6 +1353,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2022_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q4")
+
+write_rds(my_2022_Q4, "data/rds/my_2022_Q4_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q4), st_bbox(my_2022_Q4))
@@ -1288,6 +1385,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2022_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q4")
+
+write_rds(my_2022_Q4, "data/rds/my_2022_Q4_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q4), st_bbox(my_2022_Q4))
@@ -1317,6 +1417,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2022_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2022 Q4")
+
+write_rds(my_2022_Q4, "data/rds/my_2022_Q4_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2022_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2022_Q4), st_bbox(my_2022_Q4))
@@ -1352,6 +1455,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2023_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q1")
+
+write_rds(my_2023_Q1, "data/rds/my_2023_Q1_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q1), st_bbox(my_2023_Q1))
@@ -1381,6 +1487,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2023_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q1")
+
+write_rds(my_2023_Q1, "data/rds/my_2023_Q1_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q1), st_bbox(my_2023_Q1))
@@ -1410,6 +1519,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2023_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q1")
+
+write_rds(my_2023_Q1, "data/rds/my_2023_Q1_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q1), st_bbox(my_2023_Q1))
@@ -1439,6 +1551,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2023_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q1")
+
+write_rds(my_2023_Q1, "data/rds/my_2023_Q1_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q1), st_bbox(my_2023_Q1))
@@ -1472,6 +1587,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2023_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q2")
+
+write_rds(my_2023_Q2, "data/rds/my_2023_Q2_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q2), st_bbox(my_2023_Q2))
@@ -1501,6 +1619,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2023_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q2")
+
+write_rds(my_2023_Q2, "data/rds/my_2023_Q2_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q2), st_bbox(my_2023_Q2))
@@ -1530,6 +1651,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2023_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q2")
+
+write_rds(my_2023_Q2, "data/rds/my_2023_Q2_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q2), st_bbox(my_2023_Q2))
@@ -1559,6 +1683,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2023_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q2")
+
+write_rds(my_2023_Q2, "data/rds/my_2023_Q2_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q2), st_bbox(my_2023_Q2))
@@ -1592,6 +1719,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2023_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q3")
+
+write_rds(my_2023_Q3, "data/rds/my_2023_Q3_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q3), st_bbox(my_2023_Q3))
@@ -1621,6 +1751,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2023_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q3")
+
+write_rds(my_2023_Q3, "data/rds/my_2023_Q3_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q3), st_bbox(my_2023_Q3))
@@ -1650,6 +1783,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2023_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q3")
+
+write_rds(my_2023_Q3, "data/rds/my_2023_Q3_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q3), st_bbox(my_2023_Q3))
@@ -1679,6 +1815,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2023_Q3 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q3")
+
+write_rds(my_2023_Q3, "data/rds/my_2023_Q3_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q3)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q3), st_bbox(my_2023_Q3))
@@ -1712,6 +1851,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2023_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q4")
+
+write_rds(my_2023_Q4, "data/rds/my_2023_Q4_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q4), st_bbox(my_2023_Q4))
@@ -1741,6 +1883,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2023_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q4")
+
+write_rds(my_2023_Q4, "data/rds/my_2023_Q4_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q4), st_bbox(my_2023_Q4))
@@ -1770,6 +1915,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2023_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q4")
+
+write_rds(my_2023_Q4, "data/rds/my_2023_Q4_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q4), st_bbox(my_2023_Q4))
@@ -1799,6 +1947,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2023_Q4 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2023 Q4")
+
+write_rds(my_2023_Q4, "data/rds/my_2023_Q4_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2023_Q4)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2023_Q4), st_bbox(my_2023_Q4))
@@ -1834,6 +1985,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2024_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2024 Q1")
+
+write_rds(my_2024_Q1, "data/rds/my_2024_Q1_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2024_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2024_Q1), st_bbox(my_2024_Q1))
@@ -1863,6 +2017,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2024_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2024 Q1")
+
+write_rds(my_2024_Q1, "data/rds/my_2024_Q1_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2024_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2024_Q1), st_bbox(my_2024_Q1))
@@ -1892,6 +2049,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2024_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2024 Q1")
+
+write_rds(my_2024_Q1, "data/rds/my_2024_Q1_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2024_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2024_Q1), st_bbox(my_2024_Q1))
@@ -1921,6 +2081,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2024_Q1 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2024 Q1")
+
+write_rds(my_2024_Q1, "data/rds/my_2024_Q1_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2024_Q1)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2024_Q1), st_bbox(my_2024_Q1))
@@ -1954,6 +2117,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Explosions/Remote violence"
 my_2024_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2024 Q2")
+
+write_rds(my_2024_Q2, "data/rds/my_2024_Q2_ER_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2024_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2024_Q2), st_bbox(my_2024_Q2))
@@ -1983,6 +2149,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Strategic developments"
 my_2024_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2024 Q2")
+
+write_rds(my_2024_Q2, "data/rds/my_2024_Q2_SD_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2024_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2024_Q2), st_bbox(my_2024_Q2))
@@ -2012,6 +2181,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Battles"
 my_2024_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2024 Q2")
+
+write_rds(my_2024_Q2, "data/rds/my_2024_Q2_B_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2024_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2024_Q2), st_bbox(my_2024_Q2))
@@ -2041,6 +2213,9 @@ plot(density(quarter_data_regions_ppp.km,
 Example <- "Violence against civilians"
 my_2024_Q2 <- acled_sf  %>%
   filter(event_type == Example & quarter == "2024 Q2")
+
+write_rds(my_2024_Q2, "data/rds/my_2024_Q2_VAC_quarter_data_regions_sf.rds")
+
 quarter_data <- as_Spatial(my_2024_Q2)
 quarter_data_sp <- as(quarter_data, "SpatialPoints")
 quarter_data_ppp <- as.ppp(st_coordinates(my_2024_Q2), st_bbox(my_2024_Q2))
@@ -2091,9 +2266,17 @@ Given the nature of the civil war event data, where localized patterns and hotsp
 
 The **G-function** provides a focused and practical approach to understanding the spatial distribution of conflict events, making it the **preferred choice** in this context.
 
+::: {.callout-tip title="Note"}
+Due to the non-deterministic nature running each simulation. The `set.seed()` function is employed to ensure the reproducibility of the simulation results.
+
+This approach enables us to assess whether the observed spatial point patterns significantly deviate from randomness, providing insights into the underlying structure of armed conflict events over time.
+:::
 
 ### Explosions/Remote violence overview
+
 ```{r, fig.width=12, fig.height=12}
+set.seed(123)
+
 # Create a list of all the ER quarter datasets
 er_datasets <- list(
   my_2021_Q1_ER_quarter_data_regions_ppp,
@@ -2133,7 +2316,10 @@ for (i in seq_along(er_datasets)) {
 ```
 
 ### Strategic developments overview
+
 ```{r, fig.width=12, fig.height=12}
+set.seed(124)
+
 # Create a list of all the ER quarter datasets
 er_datasets <- list(
   my_2021_Q1_SD_quarter_data_regions_ppp,
@@ -2172,7 +2358,10 @@ for (i in seq_along(er_datasets)) {
 ```
 
 ### Battles overview
+
 ```{r, fig.width=12, fig.height=12}
+set.seed(125)
+
 # Create a list of all the ER quarter datasets
 er_datasets <- list(
   my_2021_Q1_B_quarter_data_regions_ppp,
@@ -2211,7 +2400,10 @@ for (i in seq_along(er_datasets)) {
 ```
 
 ### Violence against civilians overview
+
 ```{r, fig.width=12, fig.height=12}
+set.seed(126)
+
 # Create a list of all the ER quarter datasets
 er_datasets <- list(
   my_2021_Q1_VAC_quarter_data_regions_ppp,
@@ -2256,17 +2448,20 @@ for (i in seq_along(er_datasets)) {
 
 -   **2021 Q2 to 2024 Q2**: Most quarters show a more stable pattern with the empirical G-function generally falling within the simulation envelope or only slightly above it at different distances. This suggests that there is no significant deviation from CSR, implying randomness in the spatial arrangement of points during most of these quarters. In some cases, the curve slightly rises above the envelope, which could indicate mild clustering.
 
-**General Trend:**
-Across the quarters, the empirical G-function mostly lies within the CSR envelope, indicating a spatial point pattern that does not strongly deviate from randomness. The early quarters show more clustering, but later quarters become more consistent with random spatial distribution.
+**General Trend:** Across the quarters, the empirical G-function mostly lies within the CSR envelope, indicating a spatial point pattern that does not strongly deviate from randomness. The early quarters show more clustering, but later quarters become more consistent with random spatial distribution.
 :::
-
 
 ## **1.7 Determining Spatio-Temporal KDE Layer**
 
 ### **1.7.1 Visualising geographic distribution of events by month**
+
+We would first prepare the `acled_sf` object. The `q` column is derived from the `event_date` field using the `quarter()` function, which extracts the quarter (Q1, Q2, Q3, or Q4) from each date. This new column helps in grouping events by the quarter of the year, which is crucial for spatio-temporal analysis.
+
 ```{r}
 temporal_acled_sf <- acled_sf %>%
   mutate(q = quarter(event_date))
+
+write_rds(temporal_acled_sf, "data/rds/temporal_acled_sf.rds")
 ```
 
 ```{r}
@@ -2278,9 +2473,25 @@ tm_facets(by="quarter",
             free.coords=FALSE, 
             drop.units = TRUE)
 ```
+
 ### **1.7.2 Deriving Quarterly Spatio-Temporal KDE Layers**
 
+In this section, we will be generating Quarterly Spatio-Temporal KDE (Kernel Density Estimation) layers for conflict events. KDE is a powerful technique for estimating the probability density function of a random variable—in this case, spatial point events such as conflicts.
+
+The goal of spatio-temporal KDE is to analyze how the intensity of conflict events evolves both spatially and temporally. Instead of simply plotting the points, KDE smooths the data to show areas of higher and lower event intensity, giving a more nuanced view of conflict pattern
+
+::: Key Steps in this Section: 1. **Quarter-Based Data Aggregation:** The conflict data will be divided into quarters (e.g., Q1 to Q4), allowing us to analyze conflict intensity in each three-month period.
+
+2.  **Spatial Density Calculation:** The KDE method will be applied to the spatial points in each quarter, resulting in a density surface that highlights areas of high conflict concentration. This is more informative than a simple point map, as it reveals underlying patterns that might not be obvious from the raw data.
+
+3.  **Temporal Change Analysis:** By deriving KDE layers for each quarter, you will visualize how conflict intensity shifts over time. This allows you to examine whether certain regions experience persistent conflict or if the hotspots move across the country as the year progresses.
+
+4.  **Visualizing KDE Layers:** Each KDE layer will be visualized on a map, either as a standalone plot or as part of a sequence (e.g., an animated GIF), showing how the density changes quarterly. This provides a dynamic view of the conflict landscape.
+
+:::
+
 #### **1.7.2.1 Explosions/Remote violence**
+
 ```{r}
 Example <- "Explosions/Remote violence"
 acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
@@ -2299,6 +2510,7 @@ acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
 
 ::: panel-tabset
 ## **Year 2021**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2312,19 +2524,21 @@ for(i in tims){
        main=paste("KDE at 2021 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/ER/kde_2021_ER", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/ER/kde_2021_ER", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2021 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
+
 ## **Year 2022**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2338,19 +2552,21 @@ for(i in tims){
        main=paste("KDE at 2022 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/ER/kde_2022_ER", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/ER/kde_2022_ER", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2022 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
+
 ## **Year 2023**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2364,19 +2580,21 @@ for(i in tims){
        main=paste("KDE at 2023 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/ER/kde_2023_ER", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/ER/kde_2023_ER", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2023 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
+
 ## **Year 2024**
+
 ```{r, fig.width=12, fig.height=6}
 acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2390,28 +2608,28 @@ for(i in tims){
        main=paste("KDE at 2024 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/ER/kde_2024_ER", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/ER/kde_2024_ER", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2024 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
 :::
 
 ```{r}
-# Load images and create a GIF
-kde_images <- list.files("kde_plots/ER/", full.names = TRUE, pattern = ".png")
+kde_images <- list.files("data/rds/kde_plots/ER/", full.names = TRUE, pattern = ".png")
 image_read(kde_images) %>%
-  image_animate(fps = 2)  # Adjust fps (frames per second) for speed
+  image_animate(fps = 2)
 ```
 
 #### **1.7.2.2 Strategic developments**
+
 ```{r}
 Example <- "Strategic developments"
 acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
@@ -2430,6 +2648,7 @@ acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
 
 ::: panel-tabset
 ## **Year 2021**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2443,20 +2662,21 @@ for(i in tims){
        main=paste("KDE at 2021 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/SD/kde_2021_SD", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/SD/kde_2021_SD", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2021 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
 
 ## **Year 2022**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2470,20 +2690,21 @@ for(i in tims){
        main=paste("KDE at 2022 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/SD/kde_2022_SD", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/SD/kde_2022_SD", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2022 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
 
 ## **Year 2023**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2497,20 +2718,21 @@ for(i in tims){
        main=paste("KDE at 2023 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/SD/kde_2023_SD", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/SD/kde_2023_SD", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2023 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
 
 ## **Year 2024**
+
 ```{r, fig.width=12, fig.height=6}
 acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2524,28 +2746,28 @@ for(i in tims){
        main=paste("KDE at 2024 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/SD/kde_2024_SD", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/SD/kde_2024_SD", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2024 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
 :::
 
 ```{r}
-# Load images and create a GIF
-kde_images <- list.files("kde_plots/SD/", full.names = TRUE, pattern = ".png")
+kde_images <- list.files("data/rds/kde_plots/SD/", full.names = TRUE, pattern = ".png")
 image_read(kde_images) %>%
-  image_animate(fps = 2)  # Adjust fps (frames per second) for speed
+  image_animate(fps = 2)
 ```
 
 #### **1.7.2.3 Battles**
+
 ```{r}
 Example <- "Battles"
 acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
@@ -2564,6 +2786,7 @@ acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
 
 ::: panel-tabset
 ## **Year 2021**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2577,19 +2800,21 @@ for(i in tims){
        main=paste("KDE at 2021 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/B/kde_2021_B", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/B/kde_2021_B", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2021 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
+
 ## **Year 2022**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2603,19 +2828,21 @@ for(i in tims){
        main=paste("KDE at 2022 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/B/kde_2022_B", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/B/kde_2022_B", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2022 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
+
 ## **Year 2023**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2629,20 +2856,21 @@ for(i in tims){
        main=paste("KDE at 2023 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/B/kde_2023_B", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/B/kde_2023_B", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2023 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
 
 ## **Year 2024**
+
 ```{r, fig.width=12, fig.height=6}
 acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2656,29 +2884,30 @@ for(i in tims){
        main=paste("KDE at 2024 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/B/kde_2024_B", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/B/kde_2024_B", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2024 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
 :::
+
 ```{r}
-# Load images and create a GIF
-kde_images <- list.files("kde_plots/B/", full.names = TRUE, pattern = ".png")
+kde_images <- list.files("data/rds/kde_plots/B/", full.names = TRUE, pattern = ".png")
 image_read(kde_images) %>%
-  image_animate(fps = 2)  # Adjust fps (frames per second) for speed
+  image_animate(fps = 2)
 ```
 
-#### **1.7.2.4 Explosions/Remote violence**
+#### **1.7.2.4 Violence against civilians**
+
 ```{r}
-Example <- "Explosions/Remote violence"
+Example <- "Violence against civilians"
 acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
   filter(year == 2021 & event_type == Example) %>%
   select(q))
@@ -2695,6 +2924,7 @@ acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
 
 ::: panel-tabset
 ## **Year 2021**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2708,20 +2938,21 @@ for(i in tims){
        main=paste("KDE at 2021 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/VAC/kde_2021_VAC", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/VAC/kde_2021_VAC", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2021 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
 
 ## **Year 2022**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2735,19 +2966,21 @@ for(i in tims){
        main=paste("KDE at 2022 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/VAC/kde_2022_VAC", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/VAC/kde_2022_VAC", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2022 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
+
 ## **Year 2023**
+
 ```{r, fig.width=12, fig.height=12}
 acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2761,19 +2994,21 @@ for(i in tims){
        main=paste("KDE at 2023 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/VAC/kde_2023_VAC", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/VAC/kde_2023_VAC", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2023 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
+
 ## **Year 2024**
+
 ```{r, fig.width=12, fig.height=6}
 acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
 st_kde <- spattemp.density(acled_spatio_ppp_owin)
@@ -2787,107 +3022,420 @@ for(i in tims){
        main=paste("KDE at 2024 Q",i))
 }
 ```
+
 ```{r}
 for(i in tims){
-  png(filename = paste0("kde_plots/VAC/kde_2024_VAC", i, ".png"), width = 800, height = 600)
+  png(filename = paste0("data/rds/kde_plots/VAC/kde_2024_VAC", i, ".png"), width = 800, height = 600)
   
   plot(st_kde, i, 
        override.par=FALSE, 
        fix.range=TRUE, 
        main=paste("KDE at 2024 Q",i))
-  # Close the PNG device to save the image
   dev.off()
 }
 ```
 :::
+
 ```{r}
-# Load images and create a GIF
-kde_images <- list.files("kde_plots/VAC/", full.names = TRUE, pattern = ".png")
+kde_images <- list.files("data/rds/kde_plots/VAC/", full.names = TRUE, pattern = ".png")
 image_read(kde_images) %>%
-  image_animate(fps = 2)  # Adjust fps (frames per second) for speed
+  image_animate(fps = 2)
 ```
 
-## **1.8 2nd-Order Spatio-temporal Point Patterns Analysis**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## **1.8 2nd-Order Spatio-Temporal Point Patterns Analysis**
+
+Given that we are analyzing **armed conflict data** across different quarters (from 2021 to 2024) and likely observing variation in event density over space and time, **inhomogeneous point patterns** are the more appropriate model.
+
+As such we have opted to use the `Kinhom` function for 2nd-order analysis.
+
+### **1.8.1 Explosions/Remote violence**
+
+::: panel-tabset
+```{r}
+Example <- "Explosions/Remote violence"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+```
+
+```{r}
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+### **1.8.2 Strategic developments**
+
+::: panel-tabset
+```{r}
+Example <- "Strategic developments"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+```
+
+```{r}
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+### **1.8.3 Battles**
+
+::: panel-tabset
+```{r}
+Example <- "Battles"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+```
+
+```{r}
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+### **1.8.3 Violence against civilians**
+
+::: panel-tabset
+```{r}
+Example <- "Violence against civilians"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2021_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2022_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2023_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- acled_quarters_2024_ppp[regions_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 999 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+```
+
+```{r}
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
