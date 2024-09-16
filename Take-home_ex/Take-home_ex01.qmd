@@ -166,7 +166,9 @@ map(events, ~ {
 ```
 
 ### **1.4.2 Storing key data**
+
 We will store key data sets intermittently to keep track of key data.
+
 ```{r}
 write_rds(acled_sf, "data/rds/acled_sf.rds")
 write_rds(regions_sf, "data/rds/regions_sf.rds")
@@ -378,11 +380,57 @@ plot(kde_year_data_regions_fixed_scott, main = "Fixed Bandwidth (bw_scott)")
 plot(kde_year_data_regions_adaptive, main = "Adaptive Bandwidth")
 ```
 
+#### **1.5.4.2 Plotting Interactive KDE Maps**
+
+```{r}
+raster_kde_fixed_scott <- raster(kde_year_data_regions_fixed_scott)
+raster_kde_adaptive_kernel <- raster(kde_year_data_regions_adaptive)
+
+# Set the correct CRS for the raster (EPSG:32647)
+projection(raster_kde_fixed_scott) <- CRS("+init=EPSG:32647 +units=km")
+projection(raster_kde_adaptive_kernel) <- CRS("+init=EPSG:32647 +units=km")
+
+```
+
+```{r, fig.height=12, fig.width=12}
+#| eval: false
+tmap_mode('view')
+
+kde_fixed_scott <- tm_basemap(server = "OpenStreetMap") +
+  tm_basemap(server = "Esri.WorldImagery") +
+  tm_shape(raster_kde_fixed_scott) +
+  tm_raster("layer",
+            n = 10,
+            title = "KDE_Fixed_scott",
+            alpha = 0.6,
+            palette = c("#fafac3","#fd953b","#f02a75","#b62385","#021c9e")) +
+  tm_shape(regions_sf) +  # Transform only for visualization
+  tm_polygons(alpha=0.1, id="ST_PCODE") +
+  tmap_options(check.and.fix = TRUE)
+
+kde_adaptive_kernel <- tm_basemap(server = "OpenStreetMap") +
+  tm_basemap(server = "Esri.WorldImagery") +
+  tm_shape(raster_kde_adaptive_kernel) +
+  tm_raster("layer",
+            n = 7,
+            title = "KDE_Adaptive_Kernel",
+            style = "pretty",
+            alpha = 0.6,
+            palette = c("#fafac3","#fd953b","#f02a75","#b62385","#021c9e")) +
+  tm_shape(regions_sf) +  # Transform only for visualization
+  tm_polygons(alpha=0.1, id="ST_PCODE") +
+  tmap_options(check.and.fix = TRUE)
+
+tmap_arrange(kde_fixed_scott, kde_adaptive_kernel, ncol=1, nrow=2, sync = TRUE)
+```
+
 ::: {.callout-tip title="Reflection"}
 After comparing the two approaches for kernel density estimation, Fixed Bandwidth using `bw_scott/2` and `Adaptive Bandwidth`, we observed that the fixed bandwidth method provides a more stable and interpretable result across the observation window. While adaptive bandwidth is designed to adjust to local point densities and capture finer details, it can sometimes introduce unnecessary complexity and overfit the density estimate, especially in areas with sparse data.
 
 Given the goals of our analysis, which emphasize consistency and smoothness over high local sensitivity, the Fixed Bandwidth approach strikes a better balance between capturing spatial trends and avoiding over-complication.
 :::
+
+#### **1.5.4.3 Viewing Quarterly KDE Maps**
 
 ### **Year 2021**
 
@@ -2267,9 +2315,11 @@ Given the nature of the civil war event data, where localized patterns and hotsp
 The **G-function** provides a focused and practical approach to understanding the spatial distribution of conflict events, making it the **preferred choice** in this context.
 
 ::: {.callout-tip title="Note"}
-Due to the non-deterministic nature running each simulation. The `set.seed()` function is employed to ensure the reproducibility of the simulation results.
+Due to the non-deterministic nature of running each simulation, the `set.seed()` function is employed to ensure the reproducibility of the simulation results. This is especially important for lower values of `nsim`, as it helps mitigate the random variability inherent in smaller sample sizes. By using a fixed seed, the analysis produces consistent outcomes across repeated runs, allowing for reliable comparisons and interpretations.
 
-This approach enables us to assess whether the observed spatial point patterns significantly deviate from randomness, providing insights into the underlying structure of armed conflict events over time.
+This approach enables us to assess whether the observed spatial point patterns significantly deviate from randomness. By simulating random point processes and comparing them to the observed data, we can identify potential clustering or dispersion patterns. These insights are critical in understanding the underlying structure of armed conflict events over time, helping to reveal whether the events are influenced by specific geographic or temporal factors or if they occur more randomly.
+
+The results of this analysis contribute to a deeper understanding of the spatial-temporal dynamics of armed conflict, such as hotspots of violence, escalation patterns, and event diffusion across regions. This information is invaluable for conflict analysis, policy-making, and intervention planning.
 :::
 
 ### Explosions/Remote violence overview
@@ -3048,6 +3098,12 @@ Given that we are analyzing **armed conflict data** across different quarters (f
 
 As such we have opted to use the `Kinhom` function for 2nd-order analysis.
 
+::: {.callout-tip title="Note"}
+It can be noted that `set.seed()` is not utilised for the following set of simulations. This is due to to `nsim` is set to a sufficiently large value, and that provides a large enough sample of randomized patterns to accurately assess the distribution of the test statistic under the null hypothesis.
+
+When the number of simulations is high, the variability in the results caused by random differences between simulations is reduced, making the outcome more stable and less sensitive to randomness. This minimizes the risk of random fluctuations significantly influencing the final result.
+:::
+
 ### **1.8.1 Explosions/Remote violence**
 
 ::: panel-tabset
@@ -3079,7 +3135,7 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
+# Perform the CSR test with 99 simulations
 K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
@@ -3098,8 +3154,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
 plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
@@ -3117,8 +3173,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
 plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
@@ -3136,8 +3192,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 ```
 
 ```{r}
@@ -3177,7 +3233,7 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
+# Perform the CSR test with 99 simulations
 K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
@@ -3196,8 +3252,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
 plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
@@ -3215,8 +3271,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
 plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
@@ -3234,8 +3290,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 ```
 
 ```{r}
@@ -3275,7 +3331,7 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
+# Perform the CSR test with 99 simulations
 K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
@@ -3294,8 +3350,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
 plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
@@ -3313,8 +3369,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
 plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
@@ -3332,7 +3388,7 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
+# Perform the CSR test with 99 simulations
 K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
 ```
 
@@ -3373,7 +3429,7 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
+# Perform the CSR test with 99 simulations
 K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
@@ -3392,8 +3448,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
 plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
@@ -3411,8 +3467,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 
 # Plot the envelope with the observed K-function
 plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
@@ -3430,8 +3486,8 @@ plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
 ```
 
 ```{r}
-# Perform the CSR test with 999 simulations
-K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border", parallel = parallel::detectCores())
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
 ```
 
 ```{r}
@@ -3439,3 +3495,1718 @@ K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=50, correction="border"
 plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 ```
 :::
+
+::: {.callout-tip title="Note"}
+**Interpretation:** 1. Large Distance Scales: - The x-axis stretches to large distances, and while there is visible divergence between the observed and theoretical K-function, this may reflect clustering at large spatial scales. However, in real-world spatial analyses, large scales may not capture important localized clustering that occurs over smaller distances.
+
+2.  Envelope Overlap:
+
+-   While the black observed curve rises above the simulation envelope, the overall broadness of the envelope may obscure fine distinctions. A closer look at smaller scales or at specific distances would provide a more refined understanding of clustering in specific areas and time periods, particularly for regions like Chin or Mandalay in the context of the Burmese civil war.
+
+3.  Potential Scale Sensitivity:
+
+-   Spatio-temporal processes often show different behaviors at different spatial or temporal scales. While this graph suggests some clustering, it's possible that examining specific distance ranges more closely (e.g., shorter spatial ranges or focusing on specific temporal windows) could reveal more localized patterns of interaction that are not easily discernible in this large-scale plot.
+:::
+
+In conclusion, the general consensus of the plots provides some indication of **spatio-temporal clustering**, but to gain meaningful insights, a closer, more focused analysis over smaller spatial and temporal distances is required to uncover patterns of conflict that may be masked at these larger scales.
+
+### **1.8.4 Looking Closer**
+
+Visually, we observed that the regions of **Chin**, **Sagaing**, **Mandalay**, and **Magway** have the highest occurrences of event types such as **Explosions/Remote violence**, **Strategic developments**, **Battles**, and **Violence against Civilians**. To better understand the spatial and temporal distribution and clustering of these events, we will perform a **second-order spatio-temporal point pattern analysis**. This will help assess the degree of interaction or clustering of events across space and time within these key regions.
+
+#### **1.8.4.1 Importing the relevant regions into R**
+
+```{r}
+chin_sf <- st_read(dsn = "data/chin", 
+                layer = "mmr_chn_polbnda_adm4_mimu_250k")
+chin_sf <- st_transform(chin_sf, crs = 32647)
+```
+
+```{r}
+chin_owin <- as.owin(chin_sf)
+```
+
+```{r}
+magway_sf <- st_read(dsn = "data/sagaing", 
+                layer = "mmr_mgy_polbnda_adm4_wfp_mimu_250k_1")
+magway_sf <- st_transform(magway_sf, crs = 32647)
+```
+
+```{r}
+magway_owin <- as.owin(magway_sf)
+```
+
+```{r}
+mandalay_sf <- st_read(dsn = "data/mandalay", 
+                layer = "mmr_mdy_polbnda_adm4_mimu_250k")
+mandalay_sf <- st_transform(mandalay_sf, crs = 32647)
+```
+
+```{r}
+mandalay_owin <- as.owin(mandalay_sf)
+```
+
+```{r}
+sagaing_sf <- st_read(dsn = "data/magway", 
+                layer = "mmr_sag_polbnda_adm4_250k_mimu_1")
+sagaing_sf <- st_transform(sagaing_sf, crs = 32647)
+```
+
+```{r}
+sagaing_owin <- as.owin(sagaing_sf)
+```
+
+```{r}
+temporal_acled_sf <- read_rds("data/rds/temporal_acled_sf.rds")
+```
+
+#### **1.8.4.2 Chin Region**
+
+```{r}
+# Perform spatial intersection to keep only the points within Chin region
+chin_acled_sf <- temporal_acled_sf %>% filter(admin1 == "Chin")
+
+# Plot the Chin region and filtered points
+tm_shape(chin_sf) +
+  tm_polygons() +
+  tm_shape(chin_acled_sf) +
+  tm_dots(size = 0.3) +
+  tm_facets(by = "quarter", 
+            free.coords = FALSE, 
+            drop.units = TRUE) + 
+  tm_layout(main.title = "Region and Boundaries of Chin",
+          main.title.position = "center",
+          main.title.size = 1,
+          legend.outside = TRUE,
+          frame = TRUE)
+```
+
+##### **1.8.4.2.1 Explosions/Remote violence**
+
+::: panel-tabset
+```{r}
+Example <- "Explosions/Remote violence"
+chin_acled_quarters_2021_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+chin_acled_quarters_2022_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+chin_acled_quarters_2023_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+chin_acled_quarters_2024_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2021_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2022_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2023_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2024_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.2.2 Strategic developments**
+
+::: panel-tabset
+```{r}
+Example <- "Strategic developments"
+chin_acled_quarters_2021_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+chin_acled_quarters_2022_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+chin_acled_quarters_2023_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+chin_acled_quarters_2024_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2021_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2022_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2023_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2024_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.2.3 Battles**
+
+::: panel-tabset
+```{r}
+Example <- "Battles"
+chin_acled_quarters_2021_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+chin_acled_quarters_2022_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+chin_acled_quarters_2023_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+chin_acled_quarters_2024_ppp <- as.ppp(chin_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2021_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2022_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2023_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2024_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.2.4 Violence against civilians**
+
+::: panel-tabset
+```{r}
+Example <- "Violence against civilians"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2021_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2022_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2023_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- chin_acled_quarters_2024_ppp[chin_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+#### **1.8.4.3 Sagaing Region**
+
+```{r}
+sagaing_acled_sf <- temporal_acled_sf %>% filter(admin1 == "Sagaing")
+tm_shape(sagaing_sf)+
+  tm_polygons() +
+  tm_shape(sagaing_acled_sf) +
+  tm_dots(size=0.1) +
+  tm_facets(by="quarter", 
+            free.coords=FALSE, 
+            drop.units = TRUE) + 
+  tm_layout(main.title = "Region and Boundaries of Sagaing",
+          main.title.position = "center",
+          main.title.size = 1,
+          legend.outside = TRUE,
+          frame = TRUE)
+```
+
+##### **1.8.4.3.1 Explosions/Remote violence**
+
+::: panel-tabset
+```{r}
+Example <- "Explosions/Remote violence"
+sagaing_acled_quarters_2021_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+sagaing_acled_quarters_2022_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+sagaing_acled_quarters_2023_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+sagaing_acled_quarters_2024_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2021_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2022_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2023_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2024_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.3.2 Strategic developments**
+
+::: panel-tabset
+```{r}
+Example <- "Strategic developments"
+sagaing_acled_quarters_2021_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+sagaing_acled_quarters_2022_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+sagaing_acled_quarters_2023_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+sagaing_acled_quarters_2024_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2021_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2022_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2023_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2024_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.3.3 Battles**
+
+::: panel-tabset
+```{r}
+Example <- "Battles"
+sagaing_acled_quarters_2021_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+sagaing_acled_quarters_2022_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+sagaing_acled_quarters_2023_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+sagaing_acled_quarters_2024_ppp <- as.ppp(sagaing_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2021_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2022_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2023_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2024_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.3.4 Violence against civilians**
+
+::: panel-tabset
+```{r}
+Example <- "Violence against civilians"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2021_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2022_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2023_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- sagaing_acled_quarters_2024_ppp[sagaing_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+#### **1.8.4.4 Mandalay Region**
+
+```{r}
+mandalay_acled_sf <- temporal_acled_sf %>% filter(admin1 == "Mandalay")
+tm_shape(mandalay_sf)+
+  tm_polygons() +
+  tm_shape(mandalay_acled_sf) +
+  tm_dots(size=0.1) +
+  tm_facets(by="quarter", 
+            free.coords=FALSE, 
+            drop.units = TRUE) + 
+  tm_layout(main.title = "Region and Boundaries of Mandalay",
+          main.title.position = "center",
+          main.title.size = 1,
+          legend.outside = TRUE,
+          frame = TRUE)
+```
+
+##### **1.8.4.4.1 Explosions/Remote violence**
+
+::: panel-tabset
+```{r}
+Example <- "Explosions/Remote violence"
+mandalay_acled_quarters_2021_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+mandalay_acled_quarters_2022_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+mandalay_acled_quarters_2023_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+mandalay_acled_quarters_2024_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2021_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2022_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2023_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2024_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.4.2 Strategic developments**
+
+::: panel-tabset
+```{r}
+Example <- "Strategic developments"
+mandalay_acled_quarters_2021_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+mandalay_acled_quarters_2022_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+mandalay_acled_quarters_2023_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+mandalay_acled_quarters_2024_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2021_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2022_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2023_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2024_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.4.3 Battles**
+
+::: panel-tabset
+```{r}
+Example <- "Battles"
+mandalay_acled_quarters_2021_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+mandalay_acled_quarters_2022_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+mandalay_acled_quarters_2023_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+mandalay_acled_quarters_2024_ppp <- as.ppp(mandalay_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2021_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2022_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2023_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2024_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.4.4 Violence against civilians**
+
+::: panel-tabset
+```{r}
+Example <- "Violence against civilians"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2021_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2022_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2023_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- mandalay_acled_quarters_2024_ppp[mandalay_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+#### **1.8.4.4 Magway Region**
+
+```{r}
+magway_acled_sf <- temporal_acled_sf %>% filter(admin1 == "Magway")
+tm_shape(magway_sf)+
+  tm_polygons() +
+  tm_shape(magway_acled_sf) +
+  tm_dots(size=0.1) +
+  tm_facets(by="quarter", 
+            free.coords=FALSE, 
+            drop.units = TRUE) + 
+  tm_layout(main.title = "Region and Boundaries of Magway",
+          main.title.position = "center",
+          main.title.size = 1,
+          legend.outside = TRUE,
+          frame = TRUE)
+```
+
+##### **1.8.4.2.1 Explosions/Remote violence**
+
+::: panel-tabset
+```{r}
+Example <- "Explosions/Remote violence"
+magway_acled_quarters_2021_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+magway_acled_quarters_2022_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+magway_acled_quarters_2023_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+magway_acled_quarters_2024_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2021_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2022_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2023_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2024_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.2.2 Strategic developments**
+
+::: panel-tabset
+```{r}
+Example <- "Strategic developments"
+magway_acled_quarters_2021_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+magway_acled_quarters_2022_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+magway_acled_quarters_2023_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+magway_acled_quarters_2024_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2021_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2022_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2023_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2024_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.2.3 Battles**
+
+::: panel-tabset
+```{r}
+Example <- "Battles"
+magway_acled_quarters_2021_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+magway_acled_quarters_2022_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+magway_acled_quarters_2023_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+magway_acled_quarters_2024_ppp <- as.ppp(magway_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2021_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2022_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2023_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2024_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+##### **1.8.4.2.4 Violence against civilians**
+
+::: panel-tabset
+```{r}
+Example <- "Violence against civilians"
+acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2021 & event_type == Example) %>%
+  select(q))
+acled_quarters_2022_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2022 & event_type == Example) %>%
+  select(q))
+acled_quarters_2023_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2023 & event_type == Example) %>%
+  select(q))
+acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
+  filter(year == 2024 & event_type == Example) %>%
+  select(q))
+```
+
+## **2021**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2021_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2022**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2022_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2023**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2023_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+
+## **2024**
+
+```{r}
+# Assuming `acled_spatio_ppp_owin` is your spatio-temporal point pattern object:
+acled_spatio_ppp_owin <- magway_acled_quarters_2024_ppp[magway_owin]
+K_st <- Kinhom(acled_spatio_ppp_owin, correction="border")
+
+# Plot the result for visual inspection
+plot(K_st, main = "Spatio-temporal K-function", legend=TRUE)
+```
+
+```{r}
+# Perform the CSR test with 99 simulations
+K_ck.csr <- envelope(acled_spatio_ppp_owin, Kinhom, nsim=99, correction="border", parallel = parallel::detectCores())
+
+# Plot the envelope with the observed K-function
+plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
+```
+:::
+
+::: {.callout-tip title="Note"}
+**Interpretation:**
+
+-   In general, the **observed K-function** (black line) starts within the envelope but begins to deviate upward as the spatial distance increases, crossing beyond the envelope at larger distances.
+
+-   This suggests that possible \*\*spatio-temporal clustering*)* is occurring at larger distances beyond the theoretical expectations under complete randomness.
+
+-   The envelope allows for a statistical comparison: if the observed K-function exceeds the envelope, it implies **significant clustering** at those distances.
+:::
+
+This plot suggests that the observed pattern of events is not completely random and that **significant clustering** occurs at larger spatial distances and time intervals, which can reveal important insights about the underlying structure of the event occurrences.
+
+Thus, these clusterings could suggests the following:
+
+1.  **Non-Random Targeting and Temporal Patterns:**
+
+-   The non-random nature of the observed patterns implies that **conflict actors may be targeting specific regions repeatedly** over certain periods, driven by strategic or political goals.
+-   This could point to **strategically significant areas** like important roads, military installations, or regions with ethnic minorities being hotspots of repeated violence.
+
+2.  **Localized Hotspots of Conflict:**
+
+-   The clustering pattern at larger distances implies that violent events, such as battles or civilian attacks, are **concentrated in certain regions** rather than being evenly spread across the country.
+-   Regions like **Chin, [Sagaing](https://www.irrawaddy.com/opinion/analysis/how-sagaing-is-at-forefront-of-revolution-against-myanmars-junta.html), Magway, and [Mandalay](https://www.bbc.com/news/world-asia-56386348)**, which have been reported as [**key areas of conflict**](https://reliefweb.int/report/myanmar/human-rights-situation-weekly-update-september-1-7-2024-enmy), experience recurring waves of violence concentrated in specific localities, due strategic importance, military operations, or political importance.
+
+## **1.9 Conclusion**
+
+The war in Myanmar has involved numerous armed groups, including pro-democracy forces and ethnic militias, battling against the military junta. The situation remains highly volatile, with frequent battles occurring across various regions, including Chin, Sagaing, Magway, and Mandalay. The conflict exhibits a cyclical nature, with periods of relative calm punctuated by intense fighting, particularly during dry seasons.
+
+Myanmar's political future remains uncertain, with the ongoing struggle between resistance forces and the military junta casting doubt over the country's ability to maintain unity and stability.
+
+**References** - BBC News. (2021). 'Mandalay was a massacre': Security forces fire at protests. Retrieved from https://www.bbc.com/news/world-asia-56386348
+
+-   Thit, N. (2022). How Sagaing Is at Forefront of Revolution Against Myanmar's Junta. Retrieved from https://www.irrawaddy.com/opinion/analysis/how-sagaing-is-at-forefront-of-revolution-against-myanmars-junta.html
+
+-   ND-Burma (2024). Human Rights Violations took place in States and Regions from Aug 22 to 31, 2024. Retrieved from https://reliefweb.int/report/myanmar/human-rights-situation-weekly-update-aug-22-31-2024-enmy
+
+-   ND-Burma (2024). Human Rights Violations took place in States and Regions from Aug 15 to 21, 2024. Retrieved from https://reliefweb.int/report/myanmar/human-rights-situation-weekly-update-aug-15-21-2024-enmy
+
+-   ND-Burma (2024). Human Rights Violations took place in States and Regions from Sep 1 to 7, 2024. Retrieved from https://reliefweb.int/report/myanmar/human-rights-situation-weekly-update-september-1-7-2024-enmy
