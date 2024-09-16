@@ -1,0 +1,217 @@
+---
+title: "In Class exercise 5"
+author: "Brian Lim"
+date: "September 16, 2024"
+date-modified: "last-modified"
+categories:
+  - Analysis
+  - R
+  - sf
+  - tidyverse
+format: html
+editor: visual
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true  
+  cache: true
+---
+
+## **5.0 Notes**:
+
+-   A way to define spatial neighbourhood (Polygon vs Centroid)
+
+    -   Defining spatial weights
+
+    -   Using a centroid to determine the neighhours around a particular area
+
+    -   centroid would be able to gauge how far any neighbour is close to the area in focus
+
+        -   Limitations of centroid: irregular shaped areas, land
+
+-   Contiguity Neighbours
+
+    -   Common shared boundary
+
+        -   Rook's case, Bishop's case, Queen's case
+
+    -   Multiple order used in measuring contiguity
+
+    -   Can be seen a graph with differing cases focusing on where their neighbours are connected
+
+## **5.1 Installing and Loading the R packages**
+
+For the purpose of this study, five R packages will be used. They are:
+
+-   [**sf**](https://r-spatial.github.io/sf/), a relatively new R package specially designed to import, manage and process vector-based geospatial data in R.
+
+-   [**spatstat**](https://spatstat.org/), a comprehensive package for point pattern analysis. We'll use it to perform first- and second-order spatial point pattern analyses and to derive kernel density estimation (KDE) layers.
+
+-   [**spdep**](https://cran.r-project.org/web/packages/spdep/), an R package focused on spatial dependence and spatial econometrics. It includes functions for computing spatial weights, neighborhood structures, and spatially lagged variables, which are crucial for understanding spatial relationships in data.
+
+-   [**knitr**](https://cran.r-project.org/web/packages/knitr/index.html), an R package that enables dynamic report generation. It integrates R code with Markdown or LaTeX to create reproducible documents, which is useful for documenting and sharing your analysis workflows.
+
+-   [**tidyverse**](https://cran.r-project.org/web/packages/tidyverse/index.html), a collection of R packages designed for data science. It includes packages like `dplyr` for data manipulation, `ggplot2` for data visualization, and `tidyr` for data tidying, all of which are essential for handling and analyzing data efficiently in a clean and consistent manner.
+
+
+-   [**GWmodel**](https://cran.r-project.org/web/packages/GWmodel/index.html), a collection of techniques from a particular branch of spatial statistics,termed geographically-weighted (GW) models. GW models suit situations when data are not described well by some global model, but where there are spatial regions where a suitably localised calibration provides a better description. 
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse, knitr, GWmodel)
+```
+
+### **5.1.1 Import shapefile into r environment**
+
+The code chunk below uses [*st_read()*](https://r-spatial.github.io/sf/reference/st_read.html) of **sf** package to import Hunan shapefile into R. The imported shapefile will be **simple features** Object of **sf**.
+
+```{r}
+hunan_sf <- st_read(dsn = "data/In-class_Ex05/geospatial", 
+                 layer = "Hunan")
+```
+
+### **5.1.2 Import csv file into r environment**
+
+Next, we will import *Hunan_2012.csv* into R by using *read_csv()* of **readr** package. The output is R dataframe class.
+
+```{r}
+hunan2012 <- read_csv("data/In-class_Ex05/aspatial/Hunan_2012.csv")
+hunan2012
+```
+
+### **5.1.3 Performing relational join**
+
+The code chunk below will be used to update the attribute table of *hunan*'s SpatialPolygonsDataFrame with the attribute fields of *hunan2012* data frame. This is performed by using *left_join()* of **dplyr** package.
+
+```{r}
+hunan_sf <- left_join(hunan_sf,hunan2012)%>%
+  select(1:3, 7, 15, 16, 31, 32)
+```
+### **5.1.4 Store file locally**
+Writing to rds would allow for quick retrieval of required data
+```{r}
+#| echo: false
+write_rds(hunan_sf, "data/rds/hunan_sf.rds")
+```
+
+```{r}
+hunan_sf <- read_rds("data/rds/hunan_sf.rds")
+```
+
+## **5.2 Converting to SpatialPolgyonDataFrame**
+```{r}
+hunan_sp <- hunan_sf %>%
+  as_Spatial()
+```
+
+## **5.3 Geographically Weighted Summary Statistics with Adaptive Bandwidth**
+Akaike information criterion (AIC) approach to determine the recommended number of neighbours
+```{r}
+bw_AIC_adapt <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = 'AIC',
+                 adaptive = TRUE,
+                 kernel = 'bisquare',
+                 longlat = T)
+```
+Cross validation approach to determine the recommended number of neighbours
+```{r}
+bw_CV_adapt <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = 'CV',
+                 adaptive = TRUE,
+                 kernel = 'bisquare',
+                 longlat = T)         
+```
+
+## **5.4 Geographically Weighted Summary Statistics with Fixed Bandwidth**
+Akaike information criterion (AIC) approach to determine the recommended number of neighbours
+```{r}
+bw_AIC_fixed <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = 'AIC',
+                 adaptive = FALSE,
+                 kernel = 'bisquare',
+                 longlat = T)
+```
+Cross validation approach to determine the recommended number of neighbours
+```{r}
+bw_CV_fixed <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = 'CV',
+                 adaptive = FALSE,
+                 kernel = 'bisquare',
+                 longlat = T)         
+```
+It can be observed that unlike the determination of the adaptive bandwidth, fixed bandwidth yield vastly different results for the methods of AIC and Cross Validation
+
+## **5.4 Geographically Weighted Summary Statistics with adaptive Bandwidth**
+```{r}
+gwstat <- gwss(data = hunan_sp,
+               vars = "GDPPC",
+               bw = bw_AIC_adapt,
+               kernel = "bisquare",
+               adaptive = TRUE,
+               longlat = T)
+gwstat[["SDF"]]
+```
+Code chunk below is used to extract SDF data table from gwss object output from gwss(). It will be converted into data.frame by using `as.data.frame()`
+```{r}
+gwstat_df <- as.data.frame(gwstat$SDF)
+```
+
+Next, cbind() is used to append the newly derived data.frame onto *hunan_sf* sf data.frame in the code chunk below
+```{r}
+hunan_gstat <- cbind(hunan_sf, gwstat_df)
+```
+
+```{r, fig.height=12, fig.width=12}
+tm_shape(hunan_gstat) +
+  tm_fill("GDPPC_LM",
+  n = 5,
+  style = "quantile") +
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "Distribution of geographically weighted mean",
+            main.title.position = "center",
+            main.title.size = 2.0,
+            legend.text.size = 1.2,
+            legend.height = 1.50,
+            legend.width = 1.50,
+            frame = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

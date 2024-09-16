@@ -1,0 +1,23 @@
+---
+title: "Spatial Weights and Applications"
+author: "Brian Lim"
+date: "September 13, 2024"
+date-modified: "last-modified"
+categories:
+  - Analysis
+  - R
+  - sf
+  - tmap
+  - tidyverse
+  - spatstat
+  - spdep
+  - knitr
+format: html
+editor: visual
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
+  cache: true
+---
