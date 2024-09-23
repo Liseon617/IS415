@@ -3579,11 +3579,11 @@ tm_shape(chin_sf) +
           main.title.size = 1,
           legend.outside = TRUE,
           frame = TRUE)
+
+write_rds(chin_acled_sf, "data/rds/chin_acled_sf.rds")
 ```
 
 ##### **1.8.4.2.1 Explosions/Remote violence**
-
-::: panel-tabset
 ```{r}
 Example <- "Explosions/Remote violence"
 chin_acled_quarters_2021_ppp <- as.ppp(chin_acled_sf %>%
@@ -3599,6 +3599,7 @@ chin_acled_quarters_2024_ppp <- as.ppp(chin_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -3678,8 +3679,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.2.2 Strategic developments**
-
-::: panel-tabset
 ```{r}
 Example <- "Strategic developments"
 chin_acled_quarters_2021_ppp <- as.ppp(chin_acled_sf %>%
@@ -3695,6 +3694,7 @@ chin_acled_quarters_2024_ppp <- as.ppp(chin_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -3774,8 +3774,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.2.3 Battles**
-
-::: panel-tabset
 ```{r}
 Example <- "Battles"
 chin_acled_quarters_2021_ppp <- as.ppp(chin_acled_sf %>%
@@ -3791,6 +3789,7 @@ chin_acled_quarters_2024_ppp <- as.ppp(chin_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -3870,8 +3869,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.2.4 Violence against civilians**
-
-::: panel-tabset
 ```{r}
 Example <- "Violence against civilians"
 acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
@@ -3887,6 +3884,7 @@ acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -3981,11 +3979,11 @@ tm_shape(sagaing_sf)+
           main.title.size = 1,
           legend.outside = TRUE,
           frame = TRUE)
+
+write_rds(sagaing_acled_sf, "data/rds/sagaing_acled_sf.rds")
 ```
 
 ##### **1.8.4.3.1 Explosions/Remote violence**
-
-::: panel-tabset
 ```{r}
 Example <- "Explosions/Remote violence"
 sagaing_acled_quarters_2021_ppp <- as.ppp(sagaing_acled_sf %>%
@@ -4001,6 +3999,7 @@ sagaing_acled_quarters_2024_ppp <- as.ppp(sagaing_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -4080,8 +4079,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.3.2 Strategic developments**
-
-::: panel-tabset
 ```{r}
 Example <- "Strategic developments"
 sagaing_acled_quarters_2021_ppp <- as.ppp(sagaing_acled_sf %>%
@@ -4097,6 +4094,7 @@ sagaing_acled_quarters_2024_ppp <- as.ppp(sagaing_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -4176,8 +4174,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.3.3 Battles**
-
-::: panel-tabset
 ```{r}
 Example <- "Battles"
 sagaing_acled_quarters_2021_ppp <- as.ppp(sagaing_acled_sf %>%
@@ -4193,6 +4189,7 @@ sagaing_acled_quarters_2024_ppp <- as.ppp(sagaing_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -4272,8 +4269,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.3.4 Violence against civilians**
-
-::: panel-tabset
 ```{r}
 Example <- "Violence against civilians"
 acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
@@ -4289,6 +4284,7 @@ acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -4383,11 +4379,11 @@ tm_shape(mandalay_sf)+
           main.title.size = 1,
           legend.outside = TRUE,
           frame = TRUE)
+
+write_rds(mandalay_acled_sf, "data/rds/mandalay_acled_sf.rds")
 ```
 
 ##### **1.8.4.4.1 Explosions/Remote violence**
-
-::: panel-tabset
 ```{r}
 Example <- "Explosions/Remote violence"
 mandalay_acled_quarters_2021_ppp <- as.ppp(mandalay_acled_sf %>%
@@ -4403,6 +4399,7 @@ mandalay_acled_quarters_2024_ppp <- as.ppp(mandalay_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -4482,8 +4479,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.4.2 Strategic developments**
-
-::: panel-tabset
 ```{r}
 Example <- "Strategic developments"
 mandalay_acled_quarters_2021_ppp <- as.ppp(mandalay_acled_sf %>%
@@ -4499,6 +4494,7 @@ mandalay_acled_quarters_2024_ppp <- as.ppp(mandalay_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -4578,8 +4574,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.4.3 Battles**
-
-::: panel-tabset
 ```{r}
 Example <- "Battles"
 mandalay_acled_quarters_2021_ppp <- as.ppp(mandalay_acled_sf %>%
@@ -4595,6 +4589,7 @@ mandalay_acled_quarters_2024_ppp <- as.ppp(mandalay_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -4674,8 +4669,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.4.4 Violence against civilians**
-
-::: panel-tabset
 ```{r}
 Example <- "Violence against civilians"
 acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
@@ -4691,6 +4684,7 @@ acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -4785,11 +4779,11 @@ tm_shape(magway_sf)+
           main.title.size = 1,
           legend.outside = TRUE,
           frame = TRUE)
+
+write_rds(magway_acled_sf, "data/rds/magway_acled_sf.rds")
 ```
 
 ##### **1.8.4.2.1 Explosions/Remote violence**
-
-::: panel-tabset
 ```{r}
 Example <- "Explosions/Remote violence"
 magway_acled_quarters_2021_ppp <- as.ppp(magway_acled_sf %>%
@@ -4805,6 +4799,7 @@ magway_acled_quarters_2024_ppp <- as.ppp(magway_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -4884,8 +4879,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.2.2 Strategic developments**
-
-::: panel-tabset
 ```{r}
 Example <- "Strategic developments"
 magway_acled_quarters_2021_ppp <- as.ppp(magway_acled_sf %>%
@@ -4901,6 +4894,7 @@ magway_acled_quarters_2024_ppp <- as.ppp(magway_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -4980,8 +4974,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.2.3 Battles**
-
-::: panel-tabset
 ```{r}
 Example <- "Battles"
 magway_acled_quarters_2021_ppp <- as.ppp(magway_acled_sf %>%
@@ -4997,6 +4989,7 @@ magway_acled_quarters_2024_ppp <- as.ppp(magway_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 
@@ -5076,8 +5069,6 @@ plot(K_ck.csr, main="Spatio-temporal K-function Envelope", legend=TRUE)
 :::
 
 ##### **1.8.4.2.4 Violence against civilians**
-
-::: panel-tabset
 ```{r}
 Example <- "Violence against civilians"
 acled_quarters_2021_ppp <- as.ppp(temporal_acled_sf %>%
@@ -5093,6 +5084,7 @@ acled_quarters_2024_ppp <- as.ppp(temporal_acled_sf %>%
   filter(year == 2024 & event_type == Example) %>%
   select(q))
 ```
+::: panel-tabset
 
 ## **2021**
 

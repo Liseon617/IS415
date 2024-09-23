@@ -54,7 +54,6 @@ For the purpose of this study, five R packages will be used. They are:
 
 -   [**tidyverse**](https://cran.r-project.org/web/packages/tidyverse/index.html), a collection of R packages designed for data science. It includes packages like `dplyr` for data manipulation, `ggplot2` for data visualization, and `tidyr` for data tidying, all of which are essential for handling and analyzing data efficiently in a clean and consistent manner.
 
-
 -   [**GWmodel**](https://cran.r-project.org/web/packages/GWmodel/index.html), a collection of techniques from a particular branch of spatial statistics,termed geographically-weighted (GW) models. GW models suit situations when data are not described well by some global model, but where there are spatial regions where a suitably localised calibration provides a better description. 
 ```{r}
 pacman::p_load(sf, spdep, tmap, tidyverse, knitr, GWmodel)
