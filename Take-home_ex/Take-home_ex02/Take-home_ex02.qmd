@@ -8,8 +8,8 @@ categories:
   - R
   - sf
   - tidyverse
+  - spdep
   - sfdep
-  - readxl
 format: html
 editor: visual
 execute: 
@@ -21,6 +21,7 @@ execute:
 ---
 
 ## 2.1 Exercise Overview
+
 Drug abuse is associated with profound health, financial, and social consequences, making it a critical global issue. Despite numerous efforts to combat the problem, illicit drug use remains highly prevalent, affecting millions of people worldwide. In 2021, it was estimated that 1 in 17 individuals aged 15–64 had used a drug in the past 12 months, with the total number of drug users rising from 240 million in 2011 to 296 million in 2021.
 
 Thailand, in particular, is in a unique geopolitical position near the Golden Triangle of Indochina—the largest drug production site in Asia. This, combined with ongoing transportation infrastructure development, has made Thailand not only a significant market for drug consumption but also a critical transit route for drug trafficking to other countries. As a result, the nation faces a growing challenge in managing the social and health issues associated with drug abuse.
@@ -32,11 +33,11 @@ Given this context, the primary objective of this exercise is to explore whether
 This exercise aims to provide a comprehensive understanding of the spatial and temporal dynamics of drug abuse in Thailand. By identifying areas of concern and tracking their changes over time, the results can support policymakers and stakeholders in designing more effective, location-based strategies to mitigate the impact of drug abuse in the country.
 
 ## 2.2 Data Acquisition
-For the purpose of this take-home exercise, two data sets shall be used, they are:
-[Thailand Drug Offenses \[2017-2022\]](https://www.kaggle.com/datasets/thaweewatboy/thailand-drug-offenses-2017-2022) at Kaggle.
-[Thailand - Subnational Administrative Boundaries](https://data.humdata.org/dataset/cod-ab-tha?) at HDX. You are required to use the province boundary data set.
+
+For the purpose of this take-home exercise, two data sets shall be used, they are: [Thailand Drug Offenses \[2017-2022\]](https://www.kaggle.com/datasets/thaweewatboy/thailand-drug-offenses-2017-2022) at Kaggle. [Thailand - Subnational Administrative Boundaries](https://data.humdata.org/dataset/cod-ab-tha?) at HDX. You are required to use the province boundary data set.
 
 ## 2.3 Getting Started
+
 For this exercise, the following R packages will be used:
 
 -   [**sf**](https://cran.r-project.org/web/packages/sf/) for handling geospatial data.
@@ -53,7 +54,7 @@ For this exercise, the following R packages will be used:
 
 -   [**spdep**](https://cran.r-project.org/web/packages/spdep/index.html) for spatial dependence analysis, including computing spatial weights and conducting spatial autocorrelation tests such as Moran's I and Geary's C
 
--   [**sfdept**](https://cran.r-project.org/web/packages/sfdep/index.html) for computing spatial weights, global and local spatial autocorrelation statistics
+-   [**sfdep**](https://cran.r-project.org/web/packages/sfdep/index.html) for computing spatial weights, global and local spatial autocorrelation statistics
 
 -   [**ggplot2**](https://cran.r-project.org/web/packages/ggplot2/index.html) for data visualization within the tidyverse. It will be used for creating a variety of plots, including temporal line charts and exploratory data visualizations that complement spatial maps
 
@@ -67,6 +68,8 @@ pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, spdep, sfdep
 
 ## 2.4 Importing Data into R
 
+Next, we will import the `thai_drug_offenses_2017_2022.csv` file into the R environment and save it into an R dataframe called `acled_sf`. The task can be performed using the `read_csv()` function from the readr package, as shown below:
+
 ```{r}
 thai_drug_offenses <- read.csv("data/archive/thai_drug_offenses_2017_2022.csv")%>% 
   select(-province_th)
@@ -76,8 +79,21 @@ thai_drug_offenses <- read.csv("data/archive/thai_drug_offenses_2017_2022.csv")%
 drug_summary <- thai_drug_offenses %>%
   group_by(fiscal_year, province_en, types_of_drug_offenses) %>%
   summarize(no_cases = sum(no_cases, na.rm = TRUE), .groups = 'drop')
-
 ```
+
+::: {.callout-tip title="Notes"}
+We used the `select()` function to ensure that the **province_th** column is not included in the dataframe.
+
+We then perform summary operation on the `thai_drug_offenses` dataset:
+
+-   **Grouping**: The data is grouped by `fiscal_year`, `province_en`, and `types_of_drug_offenses`, which organizes the data by year, province, and type of drug offense.
+-   **Summarizing**: For each group, it calculates the total number of cases (`no_cases`) by summing them while ignoring any missing values (`na.rm = TRUE`).
+-   **Output**: The resulting `drug_summary` dataset will contain the summarized number of drug offense cases (`no_cases`) for each combination of year, province, and offense type.
+
+The `.groups = 'drop'` argument ensures that the grouping is removed from the final summarized data.
+:::
+
+We then import the boundaries and provinces of Thailand using the `st_read()` function to import the *tha_adm_rtsd_itos_20210121_shp* shapefile into R as a simple feature data frame named `regions_sf`. We also check the validity of the imported dataset, ensuring that it is in the right format with the `st_crs()` function:
 
 ```{r}
 regions_sf <- st_read(dsn = "data/tha_adm_rtsd_itos_20210121_shp", 
@@ -86,11 +102,9 @@ regions_sf <- st_read(dsn = "data/tha_adm_rtsd_itos_20210121_shp",
 st_crs(regions_sf)
 ```
 
-```{r}
-st_geometry_type(regions_sf)
-```
-
 ## 2.5 Data Wrangling
+
+Before proceed we will do some **data wrangling**, this step primarily consist of checking for possible mismatches due to differences in the imported datasets. We will create a function to identify this.
 
 ```{r}
 # Function to check province differences
@@ -132,10 +146,14 @@ thai_drug_offenses <- thai_drug_offenses %>%
 prov_diff(unique(thai_drug_offenses$province_en), unique(regions_sf$ADM1_EN))
 ```
 
+We will then join both datasets togther based on the **province_en** and **ADM1_EN** columns
+
 ```{r chunk_name, cache=FALSE}
 drug_region_1 <- left_join(thai_drug_offenses, regions_sf, by = c("province_en" = "ADM1_EN")) %>%
   select(1:6, "date", "geometry")
 ```
+
+We then perform data validation checks on the newly created `drug_region_1` dataset, checking for missing values in key columns: `geometry`, `province_en`, `types_of_drug_offenses`, and `no_cases`. It uses the `summarise()` function to count how many `NA` values exist in each of these columns, helping to identify any incomplete or missing data.
 
 ```{r}
 # Check for null values in key columns
@@ -147,6 +165,8 @@ na_count <- drug_region_1 %>%
 
 print(na_count)
 ```
+
+We then look for duplicate rows by grouping the data by `province_en`, `fiscal_year`, and `types_of_drug_offenses`. If any rows have the same combination of these fields (i.e., they are duplicates), they will be filtered and displayed; otherwise, a message indicating no duplicates will be printed. These steps ensure data quality before proceeding with any spatial or statistical analysis.
 
 ```{r}
 duplicates <- drug_region_1 %>%
@@ -162,6 +182,8 @@ if (nrow(duplicates) > 0) {
 }
 ```
 
+We then ensure that `drug_region_1` is an `sf` object by using the `st_crs()` function, which returns the coordinate reference system (CRS) if the object is spatial, converting the `drug_region_1` data frame into an `sf` object using `st_as_sf()`, specifying EPSG:4326 as the CRS. This corresponds to the WGS 84 geographic coordinate system which is suitable for country of Thailand. This conversion is necessary to perform spatial analysis, as it ensures the dataset includes spatial information with proper geographic coordinates.
+
 ```{r}
 # check if drug_region_1 is an sf object
 st_crs(drug_region_1)
@@ -174,9 +196,6 @@ drug_region_thailand_sf <- st_as_sf(drug_region_1, crs = 4326)
 
 ```{r}
 write_rds(drug_region_thailand_sf, "data/rds/drug_region_thailand_sf.rds")
-```
-
-```{r}
 drug_region_thailand_sf <- read_rds("data/rds/drug_region_thailand_sf.rds")
 ```
 
@@ -421,7 +440,9 @@ global_moran_test_2018_p_value <- global_moran_test_2018$p.value
 global_moran_test_2018
 ```
 
-For the year of **2017**, the Moran I statistic shows slight positive spatial autocorrelation, meaning there is some clustering of similar values of drug-related cases, but this clustering is weak and not statistically significant at the **5%** level (though close, with a p-value of **0.0577**). There is weak evidence suggesting that nearby provinces might have similar levels of drug-related cases, but the relationship is **not strong enough** to definitively **conclude spatial clustering**. As such, further investigation is needed to show stronger spatial autocorrelation.
+In **2018**, the results of the Moran's I test reveal a slight positive spatial autocorrelation for drug-related cases in Thailand, indicated by a Moran I statistic of **0.0952**. This suggests that there is some degree of clustering among provinces with similar levels of drug-related incidents. However, the significance of this clustering is marginal, as evidenced by the p-value of **0.0423**, which is just below the conventional threshold of **0.05** for statistical significance.
+
+While the results imply a weak tendency for nearby provinces to exhibit similar drug-related case counts, the evidence is insufficient to draw definitive conclusions about robust spatial clustering. The expectation value of **-0.0132** and variance of **0.0039** further support the interpretation that, although there are clusters present, they do not exhibit a strong or clear pattern. This indicates a need for additional analyses or data to better understand the underlying dynamics of drug use in the region. Authorities may consider more detailed investigations to explore factors influencing these patterns, such as socio-economic conditions, access to treatment, or enforcement measures in surrounding areas.
 
 ## Global Moran's I permutation test
 
@@ -470,7 +491,7 @@ bperm_2018
 
 #### Year 2019
 
-Similar that of 2017, we will compute a contiguity weight matrix for the study area, assigning spatial weights to each neighboring polygon, while also manually assigning "Phuket" and "Phangnga" as neighbours.
+Similar that of the previous years, we will compute a contiguity weight matrix for the study area, assigning spatial weights to each neighboring polygon, while also manually assigning "Phuket" and "Phangnga" as neighbours.
 
 ```{r}
 thailand_nb_q <- st_contiguity(region_2019_sf, queen=TRUE)
@@ -527,7 +548,9 @@ global_moran_test_2019_p_value <- global_moran_test_2019$p.value
 global_moran_test_2019
 ```
 
-For the year of **2017**, the Moran I statistic shows slight positive spatial autocorrelation, meaning there is some clustering of similar values of drug-related cases, but this clustering is weak and not statistically significant at the **5%** level (though close, with a p-value of **0.0577**). There is weak evidence suggesting that nearby provinces might have similar levels of drug-related cases, but the relationship is **not strong enough** to definitively **conclude spatial clustering**. As such, further investigation is needed to show stronger spatial autocorrelation.
+In **2019**, the results of the Moran's I test indicate a moderate positive spatial autocorrelation for drug-related cases in Thailand, reflected by a Moran I statistic of **0.1410**. This suggests a more pronounced clustering effect, where nearby provinces are likely to have similar levels of drug-related incidents.
+
+The p-value of **0.0149** is statistically significant, indicating that the observed clustering is unlikely to be due to random chance at the **5%** significance level. This finding reinforces the notion that there are regions in Thailand where drug-related cases are concentrated, pointing to potential hotspots that may require targeted interventions.
 
 ## Global Moran's I permutation test
 
@@ -576,7 +599,7 @@ bperm_2019
 
 #### Year 2020
 
-Similar that of 2017, we will compute a contiguity weight matrix for the study area, assigning spatial weights to each neighboring polygon, while also manually assigning "Phuket" and "Phangnga" as neighbours.
+Similar that of the previous years, we will compute a contiguity weight matrix for the study area, assigning spatial weights to each neighboring polygon, while also manually assigning "Phuket" and "Phangnga" as neighbours.
 
 ```{r}
 thailand_nb_q <- st_contiguity(region_2020_sf, queen=TRUE)
@@ -633,7 +656,11 @@ global_moran_test_2020_p_value <- global_moran_test_2020$p.value
 global_moran_test_2020
 ```
 
-For the year of **2017**, the Moran I statistic shows slight positive spatial autocorrelation, meaning there is some clustering of similar values of drug-related cases, but this clustering is weak and not statistically significant at the **5%** level (though close, with a p-value of **0.0577**). There is weak evidence suggesting that nearby provinces might have similar levels of drug-related cases, but the relationship is **not strong enough** to definitively **conclude spatial clustering**. As such, further investigation is needed to show stronger spatial autocorrelation.
+For the year **2020**, the results of the Moran's I test reveal a slight positive spatial autocorrelation for drug-related cases in Thailand, with a Moran I statistic of **0.0875**. This indicates that there is some level of clustering of similar values, although the strength of this clustering is weak.
+
+The p-value of **0.08349** suggests that the observed spatial autocorrelation is not statistically significant at the conventional **5%** level, indicating that the clustering might be due to random chance rather than a definitive spatial pattern. Despite being close to significance, this p-value reflects uncertainty regarding the presence of meaningful spatial clusters.
+
+With an expectation value of **-0.0132** and a variance of **0.0053**, the results imply that while there is a slight tendency for neighboring provinces to exhibit similar drug-related cases, the evidence is insufficient to draw strong conclusions about spatial clustering. Authorities may need to continue monitoring drug-related incidents in this year, as the potential for clustering exists, but further analysis and data may be required to identify any significant patterns or trends.
 
 ## Global Moran's I permutation test
 
@@ -682,7 +709,7 @@ bperm_2020
 
 #### Year 2021
 
-Similar that of 2017, we will compute a contiguity weight matrix for the study area, assigning spatial weights to each neighboring polygon, while also manually assigning "Phuket" and "Phangnga" as neighbours.
+Similar that of the previous years, we will compute a contiguity weight matrix for the study area, assigning spatial weights to each neighboring polygon, while also manually assigning "Phuket" and "Phangnga" as neighbours.
 
 ```{r}
 thailand_nb_q <- st_contiguity(region_2021_sf, queen=TRUE)
@@ -739,7 +766,11 @@ global_moran_test_2021_p_value <- global_moran_test_2021$p.value
 global_moran_test_2021
 ```
 
-For the year of **2017**, the Moran I statistic shows slight positive spatial autocorrelation, meaning there is some clustering of similar values of drug-related cases, but this clustering is weak and not statistically significant at the **5%** level (though close, with a p-value of **0.0577**). There is weak evidence suggesting that nearby provinces might have similar levels of drug-related cases, but the relationship is **not strong enough** to definitively **conclude spatial clustering**. As such, further investigation is needed to show stronger spatial autocorrelation.
+For the year **2021**, the results of the Moran's I test demonstrate a significant positive spatial autocorrelation for drug-related cases in Thailand, with a Moran I statistic of **0.2013**. This indicates a notable clustering of similar values, suggesting that provinces with higher drug-related cases are concentrated near each other.
+
+The p-value of **0.002379** is highly significant, well below the conventional **5%** threshold, which provides strong evidence against the null hypothesis of randomness. This result suggests that the observed clustering is not likely to be due to chance, indicating a robust spatial pattern in drug-related incidents.
+
+With an expectation value of **-0.0132** and a variance of **0.0058**, the findings imply a strong tendency for neighboring provinces to exhibit similar levels of drug-related cases. The identified clustering may warrant focused interventions and policy responses from authorities to address the growing concentration of drug-related issues in these regions. Such targeted strategies could be crucial in mitigating the potential escalation of drug-related activities in the identified hotspots.
 
 ## Global Moran's I permutation test
 
@@ -788,7 +819,7 @@ bperm_2021
 
 #### Year 2022
 
-Similar that of 2017, we will compute a contiguity weight matrix for the study area, assigning spatial weights to each neighboring polygon, while also manually assigning "Phuket" and "Phangnga" as neighbours.
+Similar that of the previous years, we will compute a contiguity weight matrix for the study area, assigning spatial weights to each neighboring polygon, while also manually assigning "Phuket" and "Phangnga" as neighbours.
 
 ```{r}
 thailand_nb_q <- st_contiguity(region_2022_sf, queen=TRUE)
@@ -845,7 +876,11 @@ global_moran_test_2022_p_value <- global_moran_test_2022$p.value
 global_moran_test_2022
 ```
 
-For the year of **2017**, the Moran I statistic shows slight positive spatial autocorrelation, meaning there is some clustering of similar values of drug-related cases, but this clustering is weak and not statistically significant at the **5%** level (though close, with a p-value of **0.0577**). There is weak evidence suggesting that nearby provinces might have similar levels of drug-related cases, but the relationship is **not strong enough** to definitively **conclude spatial clustering**. As such, further investigation is needed to show stronger spatial autocorrelation.
+For the year **2022**, the Moran's I test results indicate a significant positive spatial autocorrelation in drug-related cases in Thailand, with a Moran I statistic of **0.2133**. This suggests a strong clustering of similar values, indicating that provinces with high rates of drug-related cases are likely situated near other high-rate provinces.
+
+The p-value of **0.001517** is highly significant, well below the **5%** threshold, providing robust evidence against the null hypothesis of randomness. This strong clustering suggests that the pattern of drug-related incidents is not due to chance but rather reflects systematic geographical trends.
+
+With an expectation value of **-0.0132** and a variance of **0.0058**, these findings underscore the importance of focusing intervention efforts on the identified clusters. The continued presence of significant spatial autocorrelation in drug-related cases across the years highlights the necessity for targeted policies and interventions in these areas to effectively address and mitigate the ongoing drug-related issues in Thailand.
 
 ## Global Moran's I permutation test
 
@@ -924,7 +959,6 @@ for (i in 1:length(gmoranMC_list)) {
 
 ### 2.6.4 Global Geary's C Permutation test
 
-::: panel-tabset
 ```{r, fig.height=12, fig.width=12}
 # List of bperm objects for each year
 gmoranMC_list <- list(bperm_2017, bperm_2018, bperm_2019, 
@@ -952,7 +986,6 @@ for (i in 1:length(gmoranMC_list)) {
   abline(v = gmoranMC$statistic, col = "red")
 }
 ```
-:::
 
 ### 2.6.5 Temporal Trends (2017-2022)
 
@@ -982,9 +1015,11 @@ geary_c_results <- data.frame(
 )
 ```
 
-::: **Moran’s I (2017 - 2022)** 2017: Moran’s I = 0.0821, p-value = 0.0577 2018: Moran’s I = 0.0952, p-value = 0.0423 2019: Moran’s I = 0.1410, p-value = 0.0149 2020: Moran’s I = 0.0875, p-value = 0.0835 2021: Moran’s I = 0.2013, p-value = 0.0024 2022: Moran’s I = 0.2133, p-value = 0.0015
+::: {.callout-tip title="Notes"}
+**Moran’s I (2017 - 2022)** 2017: Moran’s I = 0.0821, p-value = 0.0577 2018: Moran’s I = 0.0952, p-value = 0.0423 2019: Moran’s I = 0.1410, p-value = 0.0149 2020: Moran’s I = 0.0875, p-value = 0.0835 2021: Moran’s I = 0.2013, p-value = 0.0024 2022: Moran’s I = 0.2133, p-value = 0.0015
 
-**Geary’s C (2017 - 2022)** 2017: Geary’s C = 1.0258, p-value = 0.5714 2018: Geary’s C = 1.0037, p-value = 0.5106 2019: Geary’s C = 0.9167, p-value = 0.2260 2020: Geary’s C = 0.9528, p-value = 0.3234 2021: Geary’s C = 0.8489, p-value = 0.0433 2022: Geary’s C = 0.8377, p-value = 0.0292 :::
+**Geary’s C (2017 - 2022)** 2017: Geary’s C = 1.0258, p-value = 0.5714 2018: Geary’s C = 1.0037, p-value = 0.5106 2019: Geary’s C = 0.9167, p-value = 0.2260 2020: Geary’s C = 0.9528, p-value = 0.3234 2021: Geary’s C = 0.8489, p-value = 0.0433 2022: Geary’s C = 0.8377, p-value = 0.0292
+:::
 
 ```{r}
 # Plot Moran's I Statistic over the years
@@ -1088,9 +1123,11 @@ From 2017 to 2022, both Moran’s I and Geary’s C statistics reveal an evolvin
 
 ## 2.7 Local Measures of Spatial Autocorrelation
 
-Building on the insights gained from global measures, local spatial autocorrelation focuses on identifying specific regions within the broader area that deviate from global trends. Techniques like Local Moran’s I allow for the detection of localized clusters and outliers, revealing spatial heterogeneity that might be masked by global statistics. This localized approach is crucial for pinpointing areas of high significance, enabling targeted interventions and more refined spatial decision-making.
+Building on the insights gained from global measures, local spatial autocorrelation focuses on identifying specific regions within the broader area that deviate from global trends. Techniques like **Local Moran’s I** allow for the detection of localized clusters and outliers, revealing spatial heterogeneity that might be masked by global statistics. This localized approach is crucial for pinpointing areas of high significance, enabling targeted interventions and more refined spatial decision-making.
 
 ### 2.7.1 Local Moran's I
+
+For each year from **2017 to 2022**, **Local Moran’s I** is calculated for each province in Thailand. This involves assessing the spatial autocorrelation of drug use cases, and for each year, a statistical test is performed with **99** simulations to generate a **p-value** for significance testing. Provinces with a **p-value** below 0.05 are considered statistically significant, and the resulting spatial autocorrelation patterns are visualized. The results for each year are presented using maps showing both **Local Moran’s I** values and their corresponding p-values, followed by a final map that highlights only statistically significant clusters `(p < 0.05)`. This iterative approach for multiple years enables the detection of persistent clusters of drug use cases across time, helping to identify long-term trends and regional patterns.
 
 ::: panel-tabset
 ## Year 2017
@@ -1715,10 +1752,11 @@ tm_shape(lisa_2022_sig)+
 
 ### 2.7.2 Statistically Significant Local Spatial Autocorrelation Map (2017 - 2022)
 
-```{r, fig.height=12, fig.width=12}
-# Load grid package for overall title
-library(grid)
+We now try to get a detailed view of spatial clusters and outliers in drug use cases across Thailand over a six-year period **(2017 - 2022)**. These maps use **Local Moran’s I** to detect localized spatial patterns of drug use incidents, identifying regions where there is a statistically significant concentration of high or low case counts compared to neighboring provinces. Each year, the statistically significant clusters (p \< 0.05) are highlighted using a color-coded palette that distinguishes between hotspots (areas with high case counts surrounded by similarly high values) and cold spots (areas with low case counts surrounded by low values). By focusing on these spatial patterns, the maps help to uncover specific provinces that either contribute to or deviate from the broader regional trends.
 
+Ultimately, this yearly comparisons aims to allow researchers and policymakers to observe how the spatial distribution of drug-related incidents changes over time. The maps serve as a critical tool for identifying regions where drug use clusters persist or evolve, offering insights into areas that may require targeted interventions. By visualizing the significant local spatial autocorrelation for each year, these maps reveal temporal dynamics, enabling a deeper understanding of the spatial heterogeneity in drug use cases across Thailand.
+
+```{r, fig.height=12, fig.width=12}
 # List of data for each year
 lisa_data <- list(
   "2017" = list(lisa = lisa_2017, sig = lisa_2017_sig),
@@ -1779,6 +1817,7 @@ Here’s how we can interpret the LISA classifications for drug use cases:
 In each year's `lisa` sf data.frame that we created when calculating local Moran’s I, we can find three fields contain the LISA categories. They are `mean`, `median` and `pysal`. We will use mean column to visualise LISA classification maps with relevant tmap functions.
 
 #### 2.7.3.1 Country-wide view
+
 ```{r}
 #| fig-width: 12
 #| fig-height: 10
@@ -1912,34 +1951,46 @@ tm_shape(lisa_2022_sig)+
   tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
   tm_grid(labels.size = 1,alpha =0.2)
 ```
+
 ::: panel-tabset
 ## Year 2017
+
 ```{r}
 study_area_lisa_2017
 ```
+
 ## Year 2018
+
 ```{r}
 study_area_lisa_2018
 ```
+
 ## Year 2019
+
 ```{r}
 study_area_lisa_2019
 ```
+
 ## Year 2020
+
 ```{r}
 study_area_lisa_2020
 ```
+
 ## Year 2021
+
 ```{r}
 study_area_lisa_2021
 ```
+
 ## Year 2022
+
 ```{r}
 study_area_lisa_2022
 ```
 :::
 
-On a national scale, provinces, especially smaller ones, may appear too small to analyze effectively, making it difficult to clearly see the distribution of the LISA classifications. A regional view, with better zoom and focus, can improve the clarity of visualization. It becomes easier to distinguish between clusters and outliers, especially in densely populated or small-area provinces. 
+On a national scale, provinces, especially smaller ones, may appear too small to analyze effectively, making it difficult to clearly see the distribution of the LISA classifications. A regional view, with better zoom and focus, can improve the clarity of visualization. It becomes easier to distinguish between clusters and outliers, especially in densely populated or small-area provinces.
 
 #### 2.7.3.2 Regional view
 
@@ -2011,7 +2062,6 @@ However, the Local Moran's I values alone do not indicate whether these patterns
 
 **By using both plots together**, we can accurately classify regions into **LISA categories** such as High-High clusters (significant hotspots of high drug use cases), Low-Low clusters (regions of low drug use cases surrounded by similar values), and outliers (provinces where values deviate significantly from their neighbors). The combination of these plots ensures that we can distinguish between true spatial patterns and random variation, leading to more reliable insights into the distribution of drug-related incidents.
 :::
-
 
 ::: panel-tabset
 ## Year 2017
@@ -2366,6 +2416,7 @@ central_map <- tm_shape(central_lisa_2017) +
 # Arrange the two maps side by side
 tmap_arrange(northeastern_map, central_map, asp=1, ncol=2)
 ```
+
 Within the year 2017, the northeastern and central regions of Thailand present an intriguing spatial autocorrelation pattern characterized by the co-existence of **Low-Low** and **Low-High** clusters in the central region, and **High-High** clusters in the northeastern region.
 
 In contrast, the **Northeastern region** (left plot) shows a pronounced **High-High** cluster in the eastern border provinces, where both the province and its neighbors experience high rates of drug use. This significant clustering highlights a potential hotspot in the northeastern part of Thailand, indicating areas that may require targeted interventions for drug-related issues.
@@ -2724,7 +2775,8 @@ central_map <- tm_shape(central_lisa_2018) +
 # Arrange the two maps side by side
 tmap_arrange(northeastern_map, central_map, asp=1, ncol=2)
 ```
-In 2018, the spatial autocorrelation patterns in the northeastern and central regions of Thailand reveal notable shifts in the classification of drug use incidents compared to the previous year. 
+
+In 2018, the spatial autocorrelation patterns in the northeastern and central regions of Thailand reveal notable shifts in the classification of drug use incidents compared to the previous year.
 
 In the **Northeastern region** (left plot), we observe a significant presence of **High-Low** clusters, particularly in the northern provinces. This indicates that areas with high drug use rates are bordered by regions with lower rates, suggesting a potential influence or spillover effect where increased drug activity in some areas may affect their neighbors. The rest of the region largely remains unclassified, highlighting a shift in the drug use dynamics in this area.
 
@@ -3086,9 +3138,10 @@ central_map <- tm_shape(central_lisa_2019) +
 # Arrange the two maps side by side
 tmap_arrange(northeastern_map, central_map, asp=1, ncol=2)
 ```
-In 2019, the spatial autocorrelation patterns in the northeastern and central regions of Thailand present distinct shifts in drug use classifications compared to previous years. 
 
-In the **Northeastern region** (left plot), there is a notable concentration of **High-High** clusters in the southern part, indicating that provinces with high drug use rates are situated near other high-use provinces. Combined with the data from previous years, this suggests a persistence of drug-related issues in this area, requiring ongoing attention from policymakers and law enforcement.  Additionally, some border provinces in the northern part of the region are classified as **Low-Low**, showing that these areas are characterized by low drug use rates surrounded by similarly low-use neighbors. This combination of clustering patterns highlights the complex landscape of drug use in the northeastern region, where areas of high intensity coexist with regions exhibiting stability in low usage.
+In 2019, the spatial autocorrelation patterns in the northeastern and central regions of Thailand present distinct shifts in drug use classifications compared to previous years.
+
+In the **Northeastern region** (left plot), there is a notable concentration of **High-High** clusters in the southern part, indicating that provinces with high drug use rates are situated near other high-use provinces. Combined with the data from previous years, this suggests a persistence of drug-related issues in this area, requiring ongoing attention from policymakers and law enforcement. Additionally, some border provinces in the northern part of the region are classified as **Low-Low**, showing that these areas are characterized by low drug use rates surrounded by similarly low-use neighbors. This combination of clustering patterns highlights the complex landscape of drug use in the northeastern region, where areas of high intensity coexist with regions exhibiting stability in low usage.
 
 In the **Central region** (right plot), we observe a significant presence of **High-High** clusters concentrated in the southern provinces, particularly in the province of **Samut Prakan**. This reinforces the trend of increased drug-related activities in this part of the region compared to the rest of the region as seen from the past 2 years.
 
@@ -3452,7 +3505,8 @@ eastern_map <- tm_shape(eastern_lisa_2020) +
 # Arrange the two maps side by side
 tmap_arrange(central_map, eastern_map, asp=1, ncol=2)
 ```
-In 2020, the spatial autocorrelation patterns in the eastern and central regions of Thailand present distinct shifts in drug use classifications compared to previous years. 
+
+In 2020, the spatial autocorrelation patterns in the eastern and central regions of Thailand present distinct shifts in drug use classifications compared to previous years.
 
 In the **Central region** (left plot), there is a notable concentration of **Low-High** clusters in the southern part, indicating that provinces with high drug use rates are situated near other high-use provinces. Combined with the data from previous years, this suggests a persistence of drug-related issues in this area, requiring ongoing attention from policymakers and law enforcement.
 
@@ -3818,11 +3872,12 @@ central_map <- tm_shape(central_lisa_2021) +
 # Arrange the two maps side by side
 tmap_arrange(western_map, central_map, asp=1, ncol=2)
 ```
-In 2021, the spatial autocorrelation patterns in the western and central regions of Thailand present distinct shifts in drug use classifications compared to previous years. 
+
+In 2021, the spatial autocorrelation patterns in the western and central regions of Thailand present distinct shifts in drug use classifications compared to previous years.
 
 In the **Western region** (left plot), there is a notable concentration of **Low-Low** clusters in the central part. These clusters indicate that these provinces and their neighbors experience consistently lower drug-related cases compared to the rest of the region.
 
-In the **Central region** (right plot), we observe a significant presence of **Low-Low** clusters concentrated in the western and southern provinces. These cluster is neigbhouring the **Low-Low** cluster of **Western region**, connecting the 2021 highlighted clusters together in both regions. This shows that this areas are characterized by low drug use rates surrounded by low-use neighbors. 
+In the **Central region** (right plot), we observe a significant presence of **Low-Low** clusters concentrated in the western and southern provinces. These cluster is neigbhouring the **Low-Low** cluster of **Western region**, connecting the 2021 highlighted clusters together in both regions. This shows that this areas are characterized by low drug use rates surrounded by low-use neighbors.
 
 Overall, the plots highlight a significant presence of Low-Low clusters in both the Western and Central regions, suggesting that several provinces in these areas have lower-than-average drug-related cases compared to their neighbors. The patterns are consistent across multiple neighbouring provinces, indicating potential coldspots that may benefit from maintaining existing preventative measures. Additionally, the absence of High-High clusters in all regions for 2021 implies that there were no significant hotspots for drug abuse activity, indicating either a reduction in drug-related cases or a more uniform distribution across these regions.
 
@@ -4142,8 +4197,6 @@ tmap_arrange(southern_local,southern_sig, asp=1, ncol=2)
 
 ### Analysis & Discussion
 
-The northeastern and central region
-
 ```{r}
 #| code-fold: true
 #| code-summary: "Show the code"
@@ -4186,36 +4239,37 @@ central_map <- tm_shape(central_lisa_2022) +
 # Arrange the two maps side by side
 tmap_arrange(northeastern_map, central_map, asp=1, ncol=2)
 ```
-In 2022, the spatial autocorrelation patterns in the northeastern and central regions of Thailand present distinct shifts in drug use classifications compared to previous years. 
+
+In 2022, the spatial autocorrelation patterns in the northeastern and central regions of Thailand present distinct shifts in drug use classifications compared to previous years.
 
 In the **Northeastern region** (left plot), there is a notable concentration of **High-High** clusters, covering a few central provinces. This indicates that these provinces and their neighboring areas have higher-than-average drug-related cases, creating a significant hotspot. There is also a **Low-High** cluster in one province to the west of the hotspot. This pattern suggests that the province itself has low drug-related cases, but it is surrounded by high-value neighbors.
 
 In the **Central region** (right plot), we observe a significant presence of **Low-Low** clusters in a few western and central provinces. Referencing the cluster data of 2021, this coldspot have consistently shown lower drug-related cases compared to the rest of the region.
 
-OVerall, the Northeastern region exhibits significant hotspots indicating provinces with elevated drug-related cases, which are surrounded by other high-case provinces. This is a marked contrast from the absence of such clusters in the Central region, which only shows Low-Low clusters representing coldspots.
+Overall, the Northeastern region exhibits significant hotspots indicating provinces with elevated drug-related cases, which are surrounded by other high-case provinces. This is a marked contrast from the absence of such clusters in the Central region, which only shows Low-Low clusters representing coldspots.
 
 The emergence of High-High clusters in the Northeastern region could point to new areas of concern that require targeted intervention strategies, while the presence of Low-Low clusters in the Central region suggests continued effectiveness in maintaining low levels of drug-related activities.
+:::
 
-## 2.8 Emerging Hot Spots Analysis (EHSA)
-```{r}
-drug_thailand_spt <- as_spacetime(drug_region_thailand_sf, "province_en", "fiscal_year")
-```
+## 2.8 Hot Spot and Cold Spot Area Analysis
 
-```{r}
-write_rds(drug_thailand_spt, "data/rds/drug_thailand_spt.rds")
-```
+The **Local Getis-Ord Gi\* statistic** is a spatial analysis technique used to identify **hotspots** and **coldspots** within geographic data. It measures spatial clustering by determining whether features with high or low values are spatially clustered.
 
-```{r}
-drug_thailand_spt <- read_rds("data/rds/drug_thailand_spt.rds")
-```
+### 2.8.1 Local Getis-Ord Gi for Hot Spot and Cold Spot Area Analysis
 
-```{r}
-ggplot(drug_thailand_spt, aes(x = fiscal_year, y = no_cases)) +
-  geom_histogram(binwidth = 1, fill = "skyblue", stat = "identity") +
-  labs(x = "year", y = "count") +
-  ggtitle("Histogram of yearly drug use cases in Thailand (2017-2022)")
-```
+In the context of this analysis, Gi\* helps identify areas with significantly high or low values of interest relative to their neighbors. A **hotspot** is an area where high values cluster, while a **coldspot** is where low values cluster.
 
+Key aspects of the Getis-Ord Gi\* statistic include:
+
+1.  **Z-Scores and p-values**: These indicate the statistical significance of the clustering. A high positive Gi\* value with a low p-value suggests a hotspot, while a low negative Gi\* value indicates a coldspot. Statistical significance is often represented using thresholds (e.g., p \< 0.05).
+
+2.  **Spatial Weighting**: Gi\* takes into account not just the value of the feature but also the values of neighboring features within a specified distance. The statistic compares the local mean to the global mean to assess whether clustering is due to chance or significant spatial patterns.
+
+3.  **Application in Hotspot & Coldspot Analysis**: In this analysis, the Gi\* statistic is applied to geographical areas to identify statistically significant areas of unusually high or low values of the phenomenon under study, such as drug use cases. These areas can then be visualized using a color scale, helping researchers or decision-makers focus on regions that exhibit non-random spatial patterns.
+
+By visualizing Gi\* results on a map, we can better understand the spatial dynamics of an issue and prioritize interventions in areas of concern.
+
+We start by calculating **Inverse Distance Weighted (IDW)** spatial weight matrices for the years 2017-2022 using contiguity-based neighborhoods. Each region is considered as its own neighbor (with `include_self`), and spatial weights are assigned based on the inverse distance between regions (`st_inverse_distance`), giving more weight to closer regions. This creates a foundation for spatial autocorrelation analysis by providing the necessary spatial relationships for each year.
 
 ```{r}
 wm_idw_2017 <- region_2017_sf %>%
@@ -4256,7 +4310,31 @@ wm_idw_2022 <- region_2022_sf %>%
          .before = 1)
 ```
 
+We store the yearly spatial weight matrices for ease of use
+
 ```{r}
+write_rds(wm_idw_2017, "data/rds/wm_idw_2017.rds")
+write_rds(wm_idw_2018, "data/rds/wm_idw_2018.rds")
+write_rds(wm_idw_2019, "data/rds/wm_idw_2019.rds")
+write_rds(wm_idw_2020, "data/rds/wm_idw_2020.rds")
+write_rds(wm_idw_2021, "data/rds/wm_idw_2021.rds")
+write_rds(wm_idw_2022, "data/rds/wm_idw_2022.rds")
+```
+
+```{r}
+wm_idw_2017 <- read_rds("data/rds/wm_idw_2017.rds")
+wm_idw_2018 <- read_rds("data/rds/wm_idw_2018.rds")
+wm_idw_2019 <- read_rds("data/rds/wm_idw_2019.rds")
+wm_idw_2020 <- read_rds("data/rds/wm_idw_2020.rds")
+wm_idw_2021 <- read_rds("data/rds/wm_idw_2021.rds")
+wm_idw_2022 <- read_rds("data/rds/wm_idw_2022.rds")
+```
+
+We apply the **Local Getis-Ord Gi**\* statistic to identify spatial clusters (hotspots and coldspots) of cases for each year (2017-2022) onto the yearly spatial weight matrices. Using the `local_gstar_perm()` function, it calculates Gi values for each region, based on the case counts (`no_cases`), spatial neighbors (`nb`), and their corresponding weights (`wt`), with 99 Monte Carlo simulations (`nsim = 99`) for statistical significance. The results are then added back to the dataset for visualization and further analysis.
+
+```{r}
+set.seed(4242)
+
 HCSA_2017 <- wm_idw_2017 %>% 
   mutate(local_Gi_star = local_gstar_perm(
     no_cases, nb, wt, nsim = 99),
@@ -4296,6 +4374,11 @@ HCSA_2022 <- wm_idw_2022 %>%
 
 ::: panel-tabset
 ## 2017
+
+### Map of Hotspots & Coldspots of Drug Use Cases in Thailand
+
+First we generate a map of Thailand for the current year, showing the **hotspots** and **coldspots** of drug use cases using Gi statistics. The fill color is determined by the **gi_star** column using a specified color palette, with a midpoint of 0 to distinguish between hotspots (**positive Gi**) and coldspots (**negative Gi**). The map also includes borders, a title, a compass, a scale bar, and a grid.
+
 ```{r, fig.height=12, fig.width=12}
 tm_shape(HCSA_2017)+
   tm_fill("gi_star", 
@@ -4309,6 +4392,103 @@ tm_shape(HCSA_2017)+
             main.title.fontface = "bold",
             legend.title.size = 1.8,
             legend.text.size = 1.3,
+            legend.outside = TRUE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+### Map of Statistically Significant Hotspots & Coldspots of Drug Use Cases
+
+We then create a map similar to the previous one but filters the data to only show provinces where the **p_sim value is less than 0.05** (indicating statistically significant results). It visualizes the **statistically significant** **hotspots** **and** **coldspots**, with **gi_star** values categorized into specific intervals (`breaks = c(-2, 0, 2, 4, 6, 8)`), and includes a histogram in the legend for distribution reference.
+
+```{r, fig.height=12, fig.width=12}
+HCSA_2017_sig <- HCSA_2017  %>%
+  filter(p_sim < 0.05)
+
+tm_shape(HCSA_2017) +
+  tm_polygons() +
+tm_shape(HCSA_2017_sig)+
+  tm_fill("gi_star", 
+          title = "Gi*",
+          palette = c("#57bfc0", "#7977f3","#f8d673","#f8b675","#f67774"),
+          breaks = c(-2, 0, 2, 4, 6, 8), 
+          midpoint = 0,
+          legend.hist = TRUE, 
+          legend.is.portrait = TRUE,
+          legend.hist.z = 0.1) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_layout(main.title = "Statistically Significant Hotspots & Coldspots \nof Drug use cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.title.size = 1.8,
+            legend.text.size = 1.3,
+            legend.outside = TRUE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+### Top Hotspots and Coldspots Identification
+
+We then identify the top hotspot provinces (with the **highest** **positive** **gi_star** values) and the top coldspot provinces (with the **lowest negative gi_star** values). It uses the filtered `HCSA_<current_year>_sig` dataset and arranges the values in descending and ascending order, respectively, to extract the top provinces.
+
+```{r}
+# Get the top 3 hotspots (highest positive gi_star values)
+top_hotspots <- HCSA_2017_sig %>%
+  arrange(desc(gi_star)) %>%
+  head(3) %>%
+  pull(province_en)
+
+# Get the top 3 cold spots (lowest negative gi_star values)
+top_coldspots <- HCSA_2017_sig %>%
+  filter(!(province_en %in% top_hotspots)) %>%
+  arrange(gi_star) %>%
+  head(3) %>%
+  pull(province_en)
+```
+
+```{r, fig.height=12, fig.width=12}
+HCSA_top_hotspots <- HCSA_2017_sig %>% filter(province_en %in% top_hotspots)
+HCSA_top_coldspots <- HCSA_2017_sig %>% filter(province_en %in% top_coldspots)
+
+tm_shape(HCSA_2017) +
+  tm_polygons() +
+tm_shape(HCSA_top_hotspots)+
+  tm_fill("gi_star", 
+          palette = c("#f67774")) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_text("province_en",auto.placement = T)+
+  tm_layout(main.title = "Most Significant Hotspots of Drug use\n cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.show = FALSE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+```{r, fig.height=12, fig.width=12}
+tm_shape(HCSA_2017) +
+  tm_polygons() +
+tm_shape(HCSA_top_coldspots)+
+  tm_fill("gi_star", 
+          palette = c("#57bfc0")) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_text("province_en", auto.placement = T)+
+  tm_layout(main.title = "Most Significant Coldspots of Drug use\n cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.show = FALSE,
             frame = TRUE) +
   tm_borders(alpha = 0.5) +
   tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
@@ -4317,6 +4497,11 @@ tm_shape(HCSA_2017)+
 ```
 
 ## 2018
+
+### Map of Hotspots & Coldspots of Drug Use Cases in Thailand
+
+First we generate a map of Thailand for the current year, showing the **hotspots** and **coldspots** of drug use cases using Gi statistics. The fill color is determined by the **gi_star** column using a specified color palette, with a midpoint of 0 to distinguish between hotspots (**positive Gi**) and coldspots (**negative Gi**). The map also includes borders, a title, a compass, a scale bar, and a grid.
+
 ```{r, fig.height=12, fig.width=12}
 tm_shape(HCSA_2018)+
   tm_fill("gi_star", 
@@ -4330,13 +4515,91 @@ tm_shape(HCSA_2018)+
             main.title.fontface = "bold",
             legend.title.size = 1.8,
             legend.text.size = 1.3,
+            legend.outside = TRUE,
             frame = TRUE) +
   tm_borders(alpha = 0.5) +
   tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
   tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
   tm_grid(labels.size = 1,alpha =0.2)
 ```
+
+### Map of Statistically Significant Hotspots & Coldspots of Drug Use Cases
+
+We then create a map similar to the previous one but filters the data to only show provinces where the **p_sim value is less than 0.05** (indicating statistically significant results). It visualizes the **statistically significant** **hotspots** **and** **coldspots**, with **gi_star** values categorized into specific intervals (`breaks = c(-2, 0, 2, 4, 6, 8)`), and includes a histogram in the legend for distribution reference.
+
+```{r, fig.height=12, fig.width=12}
+HCSA_2018_sig <- HCSA_2018  %>%
+  filter(p_sim < 0.05)
+
+tm_shape(HCSA_2018) +
+  tm_polygons() +
+tm_shape(HCSA_2018_sig)+
+  tm_fill("gi_star", 
+          title = "Gi*",
+          palette = c("#57bfc0", "#7977f3","#f8d673","#f8b675","#f67774"),
+          breaks = c(-2, 0, 2, 4, 6, 8), 
+          midpoint = 0,
+          legend.hist = TRUE, 
+          legend.is.portrait = TRUE,
+          legend.hist.z = 0.1) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_layout(main.title = "Statistically Significant Hotspots & Coldspots \nof Drug use cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.title.size = 1.8,
+            legend.text.size = 1.3,
+            legend.outside = TRUE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+### Top Hotspots and Coldspots Identification
+
+We then identify the top hotspot provinces (with the **highest** **positive** **gi_star** values) and the top coldspot provinces (with the **lowest negative gi_star** values). It uses the filtered `HCSA_<current_year>_sig` dataset and arranges the values in descending and ascending order, respectively, to extract the top provinces.
+
+From the plot above, it, there is only 1 statistically significant hotspot during the year 2018. We will get the top hotspot based on `gi_star` value.
+
+```{r}
+# Get the top hotspot (highest positive gi_star values)
+top_hotspots <- HCSA_2018_sig %>%
+  arrange(desc(gi_star)) %>%
+  head(1) %>%
+  pull(province_en)
+```
+
+```{r, fig.height=12, fig.width=12}
+HCSA_top_hotspots <- HCSA_2018_sig %>% filter(province_en %in% top_hotspots)
+HCSA_top_coldspots <- HCSA_2018_sig %>% filter(province_en %in% top_coldspots)
+
+tm_shape(HCSA_2018) +
+  tm_polygons() +
+tm_shape(HCSA_top_hotspots)+
+  tm_fill("gi_star", 
+          palette = c("#f67774")) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_text("province_en",auto.placement = T)+
+  tm_layout(main.title = "Most Significant Hotspots of Drug use\n cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.show = FALSE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
 ## 2019
+
+### Map of Hotspots & Coldspots of Drug Use Cases in Thailand
+
+First we generate a map of Thailand for the current year, showing the **hotspots** and **coldspots** of drug use cases using Gi statistics. The fill color is determined by the **gi_star** column using a specified color palette, with a midpoint of 0 to distinguish between hotspots (**positive Gi**) and coldspots (**negative Gi**). The map also includes borders, a title, a compass, a scale bar, and a grid.
+
 ```{r, fig.height=12, fig.width=12}
 tm_shape(HCSA_2019)+
   tm_fill("gi_star", 
@@ -4350,6 +4613,78 @@ tm_shape(HCSA_2019)+
             main.title.fontface = "bold",
             legend.title.size = 1.8,
             legend.text.size = 1.3,
+            legend.outside = TRUE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+### Map of Statistically Significant Hotspots & Coldspots of Drug Use Cases
+
+We then create a map similar to the previous one but filters the data to only show provinces where the **p_sim value is less than 0.05** (indicating statistically significant results). It visualizes the **statistically significant** **hotspots** **and** **coldspots**, with **gi_star** values categorized into specific intervals (`breaks = c(-2, 0, 2, 4, 6, 8)`), and includes a histogram in the legend for distribution reference.
+
+```{r, fig.height=12, fig.width=12}
+HCSA_2019_sig <- HCSA_2019  %>%
+  filter(p_sim < 0.05)
+
+tm_shape(HCSA_2019) +
+  tm_polygons() +
+tm_shape(HCSA_2019_sig)+
+  tm_fill("gi_star", 
+          title = "Gi*",
+          palette = c("#57bfc0", "#7977f3","#f8d673","#f8b675","#f67774"),
+          breaks = c(-2, 0, 2, 4, 6, 8), 
+          midpoint = 0,
+          legend.hist = TRUE, 
+          legend.is.portrait = TRUE,
+          legend.hist.z = 0.1) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_layout(main.title = "Statistically Significant Hotspots & Coldspots \nof Drug use cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.title.size = 1.8,
+            legend.text.size = 1.3,
+            legend.outside = TRUE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+### Top Hotspots and Coldspots Identification
+
+We then identify the top hotspot provinces (with the **highest** **positive** **gi_star** values) and the top coldspot provinces (with the **lowest negative gi_star** values). It uses the filtered `HCSA_<current_year>_sig` dataset and arranges the values in descending and ascending order, respectively, to extract the top provinces.
+
+From the plot above, it, there is only 1 statistically significant hotspot during the year 2018. We will get the top hotspot based on `gi_star` value.
+
+```{r}
+# Get the top hotspot (highest positive gi_star values)
+top_hotspots <- HCSA_2019_sig %>%
+  arrange(desc(gi_star)) %>%
+  head(1) %>%
+  pull(province_en)
+```
+
+```{r, fig.height=12, fig.width=12}
+HCSA_top_hotspots <- HCSA_2019_sig %>% filter(province_en %in% top_hotspots)
+HCSA_top_coldspots <- HCSA_2019_sig %>% filter(province_en %in% top_coldspots)
+
+tm_shape(HCSA_2019) +
+  tm_polygons() +
+tm_shape(HCSA_top_hotspots)+
+  tm_fill("gi_star", 
+          palette = c("#f67774")) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_text("province_en",auto.placement = T)+
+  tm_layout(main.title = "Most Significant Hotspots of Drug use\n cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.show = FALSE,
             frame = TRUE) +
   tm_borders(alpha = 0.5) +
   tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
@@ -4358,6 +4693,11 @@ tm_shape(HCSA_2019)+
 ```
 
 ## 2020
+
+### Map of Hotspots & Coldspots of Drug Use Cases in Thailand
+
+First we generate a map of Thailand for the current year, showing the **hotspots** and **coldspots** of drug use cases using Gi statistics. The fill color is determined by the **gi_star** column using a specified color palette, with a midpoint of 0 to distinguish between hotspots (**positive Gi**) and coldspots (**negative Gi**). The map also includes borders, a title, a compass, a scale bar, and a grid.
+
 ```{r, fig.height=12, fig.width=12}
 tm_shape(HCSA_2020)+
   tm_fill("gi_star", 
@@ -4371,6 +4711,103 @@ tm_shape(HCSA_2020)+
             main.title.fontface = "bold",
             legend.title.size = 1.8,
             legend.text.size = 1.3,
+            legend.outside = TRUE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+### Map of Statistically Significant Hotspots & Coldspots of Drug Use Cases
+
+We then create a map similar to the previous one but filters the data to only show provinces where the **p_sim value is less than 0.05** (indicating statistically significant results). It visualizes the **statistically significant** **hotspots** **and** **coldspots**, with **gi_star** values categorized into specific intervals (`breaks = c(-2, 0, 2, 4, 6, 8)`), and includes a histogram in the legend for distribution reference.
+
+```{r, fig.height=12, fig.width=12}
+HCSA_2020_sig <- HCSA_2020  %>%
+  filter(p_sim < 0.05)
+
+tm_shape(HCSA_2020) +
+  tm_polygons() +
+tm_shape(HCSA_2020_sig)+
+  tm_fill("gi_star", 
+          title = "Gi*",
+          palette = c("#57bfc0", "#7977f3","#f8d673","#f8b675","#f67774"),
+          breaks = c(-2, 0, 2, 4, 6, 8), 
+          midpoint = 0,
+          legend.hist = TRUE, 
+          legend.is.portrait = TRUE,
+          legend.hist.z = 0.1) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_layout(main.title = "Statistically Significant Hotspots & Coldspots \nof Drug use cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.title.size = 1.8,
+            legend.text.size = 1.3,
+            legend.outside = TRUE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+### Top Hotspots and Coldspots Identification
+
+We then identify the top hotspot provinces (with the **highest** **positive** **gi_star** values) and the top coldspot provinces (with the **lowest negative gi_star** values). It uses the filtered `HCSA_<current_year>_sig` dataset and arranges the values in descending and ascending order, respectively, to extract the top provinces.
+
+```{r}
+# Get the top 3 hotspots (highest positive gi_star values)
+top_hotspots <- HCSA_2020_sig %>%
+  arrange(desc(gi_star)) %>%
+  head(3) %>%
+  pull(province_en)
+
+# Get the top 3 cold spots (lowest negative gi_star values)
+top_coldspots <- HCSA_2020_sig %>%
+  filter(!(province_en %in% top_hotspots)) %>%
+  arrange(gi_star) %>%
+  head(3) %>%
+  pull(province_en)
+```
+
+```{r, fig.height=12, fig.width=12}
+HCSA_top_hotspots <- HCSA_2020_sig %>% filter(province_en %in% top_hotspots)
+HCSA_top_coldspots <- HCSA_2020_sig %>% filter(province_en %in% top_coldspots)
+
+tm_shape(HCSA_2020) +
+  tm_polygons() +
+tm_shape(HCSA_top_hotspots)+
+  tm_fill("gi_star", 
+          palette = c("#f67774")) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_text("province_en",auto.placement = T)+
+  tm_layout(main.title = "Most Significant Hotspots of Drug use\n cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.show = FALSE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+```{r, fig.height=12, fig.width=12}
+tm_shape(HCSA_2020) +
+  tm_polygons() +
+tm_shape(HCSA_top_coldspots)+
+  tm_fill("gi_star", 
+          palette = c("#57bfc0")) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_text("province_en", auto.placement = T)+
+  tm_layout(main.title = "Most Significant Coldspots of Drug use\n cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.show = FALSE,
             frame = TRUE) +
   tm_borders(alpha = 0.5) +
   tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
@@ -4379,6 +4816,11 @@ tm_shape(HCSA_2020)+
 ```
 
 ## 2021
+
+### Map of Hotspots & Coldspots of Drug Use Cases in Thailand
+
+First we generate a map of Thailand for the current year, showing the **hotspots** and **coldspots** of drug use cases using Gi statistics. The fill color is determined by the **gi_star** column using a specified color palette, with a midpoint of 0 to distinguish between hotspots (**positive Gi**) and coldspots (**negative Gi**). The map also includes borders, a title, a compass, a scale bar, and a grid.
+
 ```{r, fig.height=12, fig.width=12}
 tm_shape(HCSA_2021)+
   tm_fill("gi_star", 
@@ -4392,6 +4834,103 @@ tm_shape(HCSA_2021)+
             main.title.fontface = "bold",
             legend.title.size = 1.8,
             legend.text.size = 1.3,
+            legend.outside = TRUE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+### Map of Statistically Significant Hotspots & Coldspots of Drug Use Cases
+
+We then create a map similar to the previous one but filters the data to only show provinces where the **p_sim value is less than 0.05** (indicating statistically significant results). It visualizes the **statistically significant** **hotspots** **and** **coldspots**, with **gi_star** values categorized into specific intervals (`breaks = c(-2, 0, 2, 4, 6, 8)`), and includes a histogram in the legend for distribution reference.
+
+```{r, fig.height=12, fig.width=12}
+HCSA_2021_sig <- HCSA_2021  %>%
+  filter(p_sim < 0.05)
+
+tm_shape(HCSA_2021) +
+  tm_polygons() +
+tm_shape(HCSA_2021_sig)+
+  tm_fill("gi_star", 
+          title = "Gi*",
+          palette = c("#57bfc0", "#7977f3","#f8d673","#f8b675","#f67774"),
+          breaks = c(-2, 0, 2, 4, 6, 8), 
+          midpoint = 0,
+          legend.hist = TRUE, 
+          legend.is.portrait = TRUE,
+          legend.hist.z = 0.1) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_layout(main.title = "Statistically Significant Hotspots & Coldspots \nof Drug use cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.title.size = 1.8,
+            legend.text.size = 1.3,
+            legend.outside = TRUE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+### Top Hotspots and Coldspots Identification
+
+We then identify the top hotspot provinces (with the **highest** **positive** **gi_star** values) and the top coldspot provinces (with the **lowest negative gi_star** values). It uses the filtered `HCSA_<current_year>_sig` dataset and arranges the values in descending and ascending order, respectively, to extract the top provinces.
+
+```{r}
+# Get the top 3 hotspots (highest positive gi_star values)
+top_hotspots <- HCSA_2021_sig %>%
+  arrange(desc(gi_star)) %>%
+  head(3) %>%
+  pull(province_en)
+
+# Get the top 3 cold spots (lowest negative gi_star values)
+top_coldspots <- HCSA_2021_sig %>%
+  filter(!(province_en %in% top_hotspots)) %>%
+  arrange(gi_star) %>%
+  head(3) %>%
+  pull(province_en)
+```
+
+```{r, fig.height=12, fig.width=12}
+HCSA_top_hotspots <- HCSA_2021_sig %>% filter(province_en %in% top_hotspots)
+HCSA_top_coldspots <- HCSA_2021_sig %>% filter(province_en %in% top_coldspots)
+
+tm_shape(HCSA_2021) +
+  tm_polygons() +
+tm_shape(HCSA_top_hotspots)+
+  tm_fill("gi_star", 
+          palette = c("#f67774")) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_text("province_en",auto.placement = T)+
+  tm_layout(main.title = "Most Significant Hotspots of Drug use\n cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.show = FALSE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+```{r, fig.height=12, fig.width=12}
+tm_shape(HCSA_2021) +
+  tm_polygons() +
+tm_shape(HCSA_top_coldspots)+
+  tm_fill("gi_star", 
+          palette = c("#57bfc0")) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_text("province_en", auto.placement = T)+
+  tm_layout(main.title = "Most Significant Coldspots of Drug use\n cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.show = FALSE,
             frame = TRUE) +
   tm_borders(alpha = 0.5) +
   tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
@@ -4400,6 +4939,11 @@ tm_shape(HCSA_2021)+
 ```
 
 ## 2022
+
+### Map of Hotspots & Coldspots of Drug Use Cases in Thailand
+
+First we generate a map of Thailand for the current year, showing the **hotspots** and **coldspots** of drug use cases using Gi statistics. The fill color is determined by the **gi_star** column using a specified color palette, with a midpoint of 0 to distinguish between hotspots (**positive Gi**) and coldspots (**negative Gi**). The map also includes borders, a title, a compass, a scale bar, and a grid.
+
 ```{r, fig.height=12, fig.width=12}
 tm_shape(HCSA_2022)+
   tm_fill("gi_star", 
@@ -4413,10 +4957,131 @@ tm_shape(HCSA_2022)+
             main.title.fontface = "bold",
             legend.title.size = 1.8,
             legend.text.size = 1.3,
+            legend.outside = TRUE,
             frame = TRUE) +
   tm_borders(alpha = 0.5) +
   tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
   tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
   tm_grid(labels.size = 1,alpha =0.2)
 ```
+
+### Map of Statistically Significant Hotspots & Coldspots of Drug Use Cases
+
+We then create a map similar to the previous one but filters the data to only show provinces where the **p_sim value is less than 0.05** (indicating statistically significant results). It visualizes the **statistically significant** **hotspots** **and** **coldspots**, with **gi_star** values categorized into specific intervals (`breaks = c(-2, 0, 2, 4, 6, 8)`), and includes a histogram in the legend for distribution reference.
+
+```{r, fig.height=12, fig.width=12}
+HCSA_2022_sig <- HCSA_2022  %>%
+  filter(p_sim < 0.05)
+
+tm_shape(HCSA_2022) +
+  tm_polygons() +
+tm_shape(HCSA_2022_sig)+
+  tm_fill("gi_star", 
+          title = "Gi*",
+          palette = c("#57bfc0", "#7977f3","#f8d673","#f8b675","#f67774"),
+          breaks = c(-2, 0, 2, 4, 6, 8), 
+          midpoint = 0,
+          legend.hist = TRUE, 
+          legend.is.portrait = TRUE,
+          legend.hist.z = 0.1) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_layout(main.title = "Statistically Significant Hotspots & Coldspots \nof Drug use cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.title.size = 1.8,
+            legend.text.size = 1.3,
+            legend.outside = TRUE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+### Top Hotspots and Coldspots Identification
+
+We then identify the top hotspot provinces (with the **highest** **positive** **gi_star** values) and the top coldspot provinces (with the **lowest negative gi_star** values). It uses the filtered `HCSA_<current_year>_sig` dataset and arranges the values in descending and ascending order, respectively, to extract the top provinces.
+
+```{r}
+# Get the top 3 hotspots (highest positive gi_star values)
+top_hotspots <- HCSA_2022_sig %>%
+  arrange(desc(gi_star)) %>%
+  head(3) %>%
+  pull(province_en)
+
+# Get the top 3 cold spots (lowest negative gi_star values)
+top_coldspots <- HCSA_2022_sig %>%
+  filter(!(province_en %in% top_hotspots)) %>%
+  arrange(gi_star) %>%
+  head(3) %>%
+  pull(province_en)
+```
+
+```{r, fig.height=12, fig.width=12}
+HCSA_top_hotspots <- HCSA_2022_sig %>% filter(province_en %in% top_hotspots)
+HCSA_top_coldspots <- HCSA_2022_sig %>% filter(province_en %in% top_coldspots)
+
+tm_shape(HCSA_2022) +
+  tm_polygons() +
+tm_shape(HCSA_top_hotspots)+
+  tm_fill("gi_star", 
+          palette = c("#f67774")) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_text("province_en",auto.placement = T)+
+  tm_layout(main.title = "Most Significant Hotspots of Drug use\n cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.show = FALSE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+```{r, fig.height=12, fig.width=12}
+tm_shape(HCSA_2022) +
+  tm_polygons() +
+tm_shape(HCSA_top_coldspots)+
+  tm_fill("gi_star", 
+          palette = c("#57bfc0")) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_text("province_en", auto.placement = T)+
+  tm_layout(main.title = "Most Significant Coldspots of Drug use\n cases in Thailand",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.show = FALSE,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+:::
+
+### 2.8.2 Discussion and Analysis
+
+This spatial analysis enables better decision-making by highlighting areas that require focused attention. Identifying hotspots helps in targeting resources and interventions effectively, while coldspot areas provide insights into regions with fewer concerns. As demonstrated through the visualization, the Gi\* analysis provides a clear and interpretable way to detect and map statistically significant clusters, facilitating data-driven policies and more informed public health strategies.
+
+In general, the trend of drug use cases in Thailand from 2017 to 2022 generally aligns with the patterns revealed by the Local Indicator of Spatial Association (LISA) analysis. This suggests a consistent spatial clustering of drug-related incidents, where certain regions experience persistent high or low rates of drug use. The LISA analysis helps identify statistically significant hotspots and coldspots, reinforcing the spatial dependency observed in the distribution of these cases over the years.
+
+## 2.9 Conclusion
+
+The spatial analysis of drug-related cases in Thailand from 2017 to 2022, using Local Getis-Ord Gi and Local Indicator of Spatial Association (LISA), reveals distinct regional patterns that indicate both persistent hotspots and coldspots across different years. The northeastern region consistently exhibits **High-High** clusters, particularly in border provinces, suggesting an ongoing concentration of drug-related issues in those areas, highlighting them as persistent hotspots. These regions demand focused interventions to curb drug-related activities.
+
+Conversely, the central and western regions show a contrasting trend with **Low-Low** clusters, signifying areas with stable, low drug-use rates, referred to as coldspots. The continued presence of these clusters across multiple years suggests the effectiveness of existing measures in maintaining lower levels of drug-related incidents in these regions. The spillover effects between neighboring regions, such as the emergence of **Low-High** and **High-Low** clusters, reflect transitional areas where drug-use trends might be shifting, requiring proactive monitoring and intervention strategies.
+
+Overall, the combination of **High-High** and **Low-Low** clusters over the years demonstrates the evolving drug-use landscape in Thailand, necessitating a tailored approach to addressing both the hotspots and coldspots identified by spatial autocorrelation techniques like LISA and Local Getis-Ord Gi.
+
+::: {.callout-tip title="Key Recommendations"}
+To effectively address the evolving landscape of drug use in Thailand, the authorities should adopt a data-driven, region-specific approach based on the spatial patterns observed in drug-related incidents from 2017 to 2022. Here are some key recommendations:
+
+1.  **Focus on Persistent Hotspots**: The northeastern region, particularly along the border provinces, consistently shows **High-High** clusters, indicating areas with a high concentration of drug-related cases. Thai authorities should prioritize these areas by intensifying law enforcement efforts, increasing surveillance, and providing targeted interventions. Coordinated cross-border efforts with neighboring countries might also help reduce the flow of drugs in these regions.
+
+2.  **Strengthen Monitoring in Transitional Areas**: The presence of **High-Low** and **Low-High** clusters in both the northeastern and central regions indicates areas where drug use trends may be shifting. Thai authorities should closely monitor these transitional areas to prevent the potential spillover of drug-related activities from high-incident to low-incident regions. Early intervention in these areas can help prevent further escalation of drug use.
+
+3.  **Sustain Coldspots with Preventive Measures**: In regions such as the central and western areas where **Low-Low** clusters are observed, authorities should continue supporting community-based preventive programs, education campaigns, and rehabilitation services. These measures have likely contributed to maintaining low levels of drug-related cases, and ensuring their sustainability will help preserve these coldspots.
 :::
