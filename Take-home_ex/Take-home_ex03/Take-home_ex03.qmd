@@ -1,0 +1,120 @@
+```{r}
+pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, spdep, sfdep, ggplot2, jsonlite)
+```
+
+```{r}
+mrt_sf <- st_read(dsn = "data/mrt_stations", layer = "mrt_stations")
+
+st_crs(mrt_sf)
+```
+
+```{r}
+mpsz_sf <- st_read(dsn = "data/MP14_SUBZONE_WEB_PL", layer = "MP14_SUBZONE_WEB_PL")
+
+st_crs(mpsz_sf)
+```
+```{r}
+northeasten.islands <- subset(mpsz_sf, mpsz_sf$SUBZONE_N == "NORTH-EASTERN ISLANDS")
+southern.islands <- subset(mpsz_sf, mpsz_sf$SUBZONE_N == "SOUTHERN GROUP")
+sudong <- subset(mpsz_sf, mpsz_sf$SUBZONE_N == "SUDONG")
+semakau <- subset(mpsz_sf,mpsz_sf$SUBZONE_N == "SEMAKAU")
+
+outerislands <- dplyr::bind_rows(list(northeasten.islands,southern.islands,sudong,semakau))
+```
+
+```{r}
+sg_sf <- st_difference(mpsz_sf, outerislands)
+```
+```{r}
+par(mar = c(0,0,0,0))
+plot(st_geometry(sg_sf))
+```
+```{r}
+# Step 1: Read the CSV files
+mrt_lrt_station <- read.csv("data/mrt_lrt_stations.csv")
+bus_stop <- read.csv("data/bus_stops.csv")
+hdb_2024 <- read.csv("data/hdb_2024-30sep.csv")
+```
+
+```{r}
+# Check the first few rows and the structure of the dataset
+head(hdb_2024)
+str(hdb_2024$month)
+hdb_2024$month <- as.Date(hdb_2024$month)
+```
+```{r}
+hdb_2022_filtered <- hdb_2024[hdb_2024$month >= as.Date("2017-01-01") & hdb_2024$month <= as.Date("2022-12-31"), ]
+```
+
+```{r}
+# Step 2: Convert to spatial objects
+# Convert MRT/LRT stations to spatial points
+mrt_lrt_station_sf <- st_as_sf(mrt_lrt_station, coords = c("LONGITUDE", "LATITUDE"), crs = 4326)
+
+# Convert Bus stops to spatial points
+bus_stop_sf <- st_as_sf(bus_stop, coords = c("Longitude", "Latitude"), crs = 4326)
+
+# Convert hdb_2024 to spatial points
+hdb_2022_filtered <- st_as_sf(hdb_2022_filtered, coords = c("longitude", "latitude"), crs = 4326)
+```
+
+```{r}
+# Step 1: Read the JSON file
+json_file_path <- "data/private_property_transaction.json"
+  data <- fromJSON(json_file_path)
+
+# Step 2: Extract x and y coordinates for all properties
+# Initialize vectors to store the coordinates
+street <- c()
+x_coordinates <- c()
+y_coordinates <- c()
+
+# Loop through each result (result1 to result5)
+for (i in 1:length(data)) {
+  # Construct the result name dynamically (result1, result2, etc.)
+  result_name <- paste0("result", i)
+  
+  # Check if the result exists in the data
+  if (result_name %in% names(data)) {
+    # Extract street, x, and y coordinates
+    street <- c(street, data[[result_name]]$street)
+    x_coordinates <- c(x_coordinates, data[[result_name]]$x)
+    y_coordinates <- c(y_coordinates, data[[result_name]]$y)
+  }
+}
+
+# Step 3: Create a data frame to store the results
+coordinates_df <- data.frame(
+  street = street,
+  x = as.numeric(x_coordinates),  # Convert to numeric
+  y = as.numeric(y_coordinates)   # Convert to numeric
+)
+# Step 4: Remove entries with missing x or y values
+coordinates_df <- na.omit(coordinates_df)
+
+private_properties_sf <- st_as_sf(coordinates_df, coords = c("x", "y"), crs = 3414)  # SVY21 CRS
+
+# Step 4: Check all the coordinates
+st_crs(private_properties_sf)
+st_crs(mrt_lrt_station_sf)
+st_crs(bus_stop_sf)
+st_crs(hdb_2022_filtered)
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-width: 12
+
+tm_shape(sg_sf) +  # Assuming regions_sf is the Singapore region shapefile
+  tm_polygons(col = "REGION_N") +  # Color regions
+  tm_shape(mrt_lrt_station_sf) +  # Add MRT/LRT stations
+  tm_dots(col = "blue", size = 0.4) +  # Plot as blue dots
+  tm_shape(hdb_2022_filtered) +  # Add bus stops
+  tm_dots(col = "black") +  # Plot as red dots
+  tm_shape(private_properties_sf) +  # Add bus stops
+  tm_dots(col = "black") +  # Plot as red dots
+  tm_layout(main.title = "MRT/LRT Stations and Bus Stops in Singapore",
+            main.title.position = "center",
+            main.title.size = 1.6)
+```
