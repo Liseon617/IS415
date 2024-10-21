@@ -64,6 +64,7 @@ For the purpose of this study, five R packages will be used. They are:
 ```{r}
 pacman::p_load(sf, sfdep, tmap, tidyverse)
 ```
+
 ### **6.1.1 Import shapefile into r environment**
 
 The code chunk below uses [*st_read()*](https://r-spatial.github.io/sf/reference/st_read.html) of **sf** package to import Hunan shapefile into R. The imported shapefile will be **simple features** Object of **sf**.
@@ -94,6 +95,7 @@ hunan_GDPPC <- left_join(hunan_sf,hunan2012)%>%
 ### **6.2 Plotting the chloropleth map**
 
 #### **Deriving Queen's contiguity weights: sfdep methods**
+
 ```{r}
 wm_q <- hunan_GDPPC %>%
   mutate(nb = st_contiguity(geometry),
@@ -101,16 +103,19 @@ wm_q <- hunan_GDPPC %>%
          .before = 1)
 ```
 
-
 #### **Computing Global Moran's I**
+
 ```{r}
 moranI <- global_moran(wm_q$GDPPC, wm_q$nb, wm_q$wt)
 glimpse(moranI)
 ```
+
 In general, Moran's I test will be performed instead of just computing the Moran's statistics. With sfdep package, Moran's I test can be performed by using `global_moran_test()` as shown in the code chunk below:
+
 ```{r}
 global_moran_test(wm_q$GDPPC, wm_q$nb, wm_q$wt)
 ```
+
 `Expectation: -0.011494253` negative value suggests clustering
 
 p-value will determine whether the null hypothesis is rejected or not. Not rejecting the null hypothesis would result in the statistic derived from Moran I to be unusable
@@ -118,10 +123,13 @@ p-value will determine whether the null hypothesis is rejected or not. Not rejec
 ```{r}
 global_moran_perm(wm_q$GDPPC, wm_q$nb, wm_q$wt, nsim=99)
 ```
+
 As seen from the moran I statistic, even thought the p-value is far smaller, the statistic is stable, approaching `0.30075`
+
 ```{r}
 set.seed(1234)
 ```
+
 It is always good to `set.seed()` before performing simulation, to ensure reproducibility.
 
 ```{r}
@@ -131,11 +139,10 @@ lisa <- wm_q %>%
     .before = 1) %>%
   unnest(local_moran)
 ```
+
 To ensure consistency, stay with 1 type of p-value **either p_ii, p_ii_sim or p_folded_sim**
 
-Mean useful if the data follows the trend of standard distribution and Median would be useful if skewness (close to 0) is detected
--   Note that row consistency also applies to mean or median
--   Examine the current trend of the skewness to make these decisions
+Mean useful if the data follows the trend of standard distribution and Median would be useful if skewness (close to 0) is detected - Note that row consistency also applies to mean or median - Examine the current trend of the skewness to make these decisions
 
 ```{r}
 tmap_mode("plot")
@@ -148,6 +155,7 @@ tm_shape(lisa) +
     main.title.size = 1
   )
 ```
+
 ```{r}
 tmap_mode("plot")
 map1 <- tm_shape(lisa) + 
@@ -172,6 +180,7 @@ tmap_arrange(map1, map2, ncol = 2)
 ```
 
 #### Visualising LISA map
+
 ```{r}
 lisa_sig <- lisa %>%
   filter(p_ii < 0.05)
@@ -183,10 +192,13 @@ tm_shape(lisa_sig) +
   tm_fill("mean") +
   tm_borders(alpha = 0.4)
 ```
+
 LISA map is categorical map showing outliers and clusters. There are two types of outliers namely: High-Low and Low-High outliers. Likewise, there are two types of clusters namely: High-High and Low-Low
 
-#### Computing local Gi* statistics
-As usual we will need to derive a spatial weight matrix before we can compute local Gi* statistics. Code chunk below will be used to derive a spatial weight matrix by using sfdep functions and tidyverse approach.
+#### Computing local Gi\* statistics
+
+As usual we will need to derive a spatial weight matrix before we can compute local Gi\* statistics. Code chunk below will be used to derive a spatial weight matrix by using sfdep functions and tidyverse approach.
+
 ```{r}
 wm_idw <- hunan_GDPPC %>%
   mutate(nb = st_contiguity(geometry),
@@ -195,7 +207,9 @@ wm_idw <- hunan_GDPPC %>%
                                    alpha = 1),
          .before = 1)
 ```
-Calculating the local Gi* by using the code chunk below:
+
+Calculating the local Gi\* by using the code chunk below:
+
 ```{r}
 HCSA <- wm_idw %>% 
   mutate(local_Gi = local_gstar_perm(
@@ -204,7 +218,9 @@ HCSA <- wm_idw %>%
   unnest(local_Gi)
 HCSA
 ```
+
 #### Visualising hot spot and cold spot areas
+
 ```{r}
 #| code-fold: true
 #| code-summary: "Show the code"
@@ -238,30 +254,3 @@ tm_shape(HCSA) +
   tm_fill("gi_star") +
   tm_borders(alpha = 0.4)
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
