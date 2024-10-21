@@ -21,6 +21,7 @@ execute:
   freeze: true
   cache: true
 ---
+
 ## 9.1 Overview
 
 In this hands-on exercise, you will gain hands-on experience on how to delineate homogeneous region by using geographically referenced multivariate data. There are two major analysis, namely:
@@ -363,12 +364,14 @@ tm_shape(shan_sf) +
   tm_legend(legend.position = c("right", "bottom"))+
   tm_layout(outer.margins=0, asp=0)
 ```
+
 ::: {.callout-tip title="Insights"}
 -   **Bias in Absolute Figures:** If we only look at the left map, larger townships seem more relevant, but the right map (showing penetration rate) gives a more balanced view of radio accessibility.
 -   **Spatial Patterns:** The spatial distribution of radio penetration shows some concentration in specific areas that don't always align with the largest household populations.
 
 This comparison highlights how different metrics (total number of households vs. penetration rate) can reveal different insights into radio ownership across Shan State.
 :::
+
 ## 9.6 Correlation Analysis
 
 Before we perform cluster analysis, it is important for us to ensure that the cluster variables are not highly correlated.
