@@ -1,5 +1,5 @@
 ```{r}
-pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, spdep, sfdep, ggplot2, jsonlite, olsrr, corrplot, ggpubr, GWmodel, gtsummary)
+pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, spdep, sfdep, ggplot2, jsonlite, olsrr, corrplot, ggpubr, GWmodel, gtsummary, Metrics, rsample, SpatialML)
 ```
 
 ```{r}
@@ -14,19 +14,423 @@ mpsz_sf <- st_read(dsn = "data/MP14_SUBZONE_WEB_PL", layer = "MP14_SUBZONE_WEB_P
 st_crs(mpsz_sf)
 ```
 ```{r}
-resale_5yr_sf <- read_rds("data/resale_5yr_sf.rds")
-resale_sf <- read_rds("data/resale_sf.rds")
+resale_sf <- read_rds("data/rental_sf.rds")
 ```
 
 ```{r}
-tmap_options(check.and.fix = TRUE)
-tm_shape(resale_sf) +  
-  tm_dots(col = "resale_price",
-          alpha = 0.6,
-          style="quantile") +
-  # sets minimum zoom level to 11, sets maximum zoom level to 14
-  tm_view(set.zoom.limits = c(11,14))
+summary(resale_sf)
+glimpse(resale_sf)
 ```
+
+```{r}
+set.seed(1234)
+resale_split <- initial_split(resale_sf, 
+                              prop = 6.5/10,)
+train_data <- training(resale_split)
+test_data <- testing(resale_split)
+```
+
+```{r}
+write_rds(train_data, "data/rds/model/train_data.rds")
+write_rds(test_data, "data/rds/model/test_data.rds")
+```
+
+```{r}
+train_data <- read_rds("data/rds/model/train_data.rds")
+test_data <- read_rds("data/rds/model/test_data.rds")
+```
+
+```{r}
+resale_nogeo <- resale_sf %>%
+  st_drop_geometry()
+```
+
+```{r}
+names(resale_nogeo)
+```
+
+::: panel-tabset
+## Order - AOE
+```{r, fig.height=12,fig.width=12}
+corrplot::corrplot(cor(resale_nogeo[, 6:18]), 
+                   diag = FALSE, 
+                   order = "AOE",
+                   tl.pos = "td", 
+                   tl.cex = 0.5, 
+                   method = "number", 
+                   type = "upper")
+```
+## Order - FPC
+```{r, fig.height=12,fig.width=12}
+corrplot::corrplot(cor(resale_nogeo[, 6:18]), 
+                   diag = FALSE, 
+                   order = "FPC",
+                   tl.pos = "td", 
+                   tl.cex = 0.5, 
+                   method = "number", 
+                   type = "upper")
+```
+## Type - Lower
+```{r, fig.height=12,fig.width=12}
+corrplot::corrplot(cor(resale_nogeo[, 6:18]), 
+                   diag = FALSE, 
+                   order = "AOE",
+                   tl.pos = "ld", 
+                   tl.cex = 0.5, 
+                   method = "number", 
+                   type = "lower")
+```
+## Type - Full
+```{r, fig.height=12,fig.width=12}
+corrplot::corrplot(cor(resale_nogeo[, 6:18]), 
+                   diag = FALSE, 
+                   order = "AOE",
+                   tl.pos = "full", 
+                   tl.cex = 0.5, 
+                   method = "number", 
+                   type = "full")
+```
+## Method - Circle
+```{r, fig.height=12,fig.width=12}
+corrplot::corrplot(cor(resale_nogeo[, 6:18]), 
+                   diag = FALSE, 
+                   order = "AOE",
+                   tl.pos = "td", 
+                   tl.cex = 0.5, 
+                   method = "circle", 
+                   type = "upper")
+```
+:::
+
+## Retriving the Stored Data
+
+```{r}
+train_data <- read_rds("data/rds/model/train_data.rds")
+test_data <- read_rds("data/rds/model/test_data.rds")
+```
+```{r}
+price_mlr <- lm(monthly_rent ~ flat_type +
+                  no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + no_of_hawker_500m + prox_childcare +
+                  prox_hawker + no_of_busstop_500m + prox_busstop + 
+                  no_of_shoppingmall_1km + prox_shoppingmall +
+                  prox_mrt + prox_prisch +
+                  prox_cbd,
+                data=train_data)
+summary(price_mlr)
+```
+```{r}
+write_rds(price_mlr, "data/rds/model/price_mlr.rds")
+```
+
+```{r}
+price_mlr <- read_rds("data/rds/model/price_mlr.rds")
+```
+
+```{r}
+train_data_sp <- as_Spatial(train_data)
+train_data_sp
+```
+```{r}
+bw_adaptive <- bw.gwr(monthly_rent ~ flat_type +
+                  no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + no_of_hawker_500m + prox_childcare +
+                  prox_hawker + no_of_busstop_500m + prox_busstop + 
+                  no_of_shoppingmall_1km + prox_shoppingmall +
+                  prox_mrt + prox_prisch +
+                  prox_cbd,
+                  data=train_data_sp,
+                  approach="CV",
+                  kernel="gaussian",
+                  adaptive=TRUE,
+                  longlat=FALSE)
+```
+
+```{r}
+write_rds(bw_adaptive, "data/rds/model/bw_adaptive.rds")
+```
+
+```{r}
+bw_adaptive <- read_rds("data/rds/model/bw_adaptive.rds")
+```
+
+```{r}
+gwr_adaptive <- gwr.basic(formula = monthly_rent ~ flat_type +
+                  no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + no_of_hawker_500m + prox_childcare +
+                  prox_hawker + no_of_busstop_500m + prox_busstop + 
+                  no_of_shoppingmall_1km + prox_shoppingmall +
+                  prox_mrt + prox_prisch +
+                  prox_cbd,
+                  data=train_data_sp,
+                          bw=bw_adaptive, 
+                          kernel = 'gaussian', 
+                          adaptive=TRUE,
+                          longlat = FALSE)
+```
+
+```{r}
+write_rds(gwr_adaptive, "data/rds/model/gwr_adaptive.rds")
+```
+
+```{r}
+gwr_adaptive <- read_rds("data/rds/model/gwr_adaptive.rds")
+```
+
+The code below can be used to display the model output.
+
+```{r}
+gwr_adaptive
+```
+
+### Converting the test data from sf data.frame to SpatialPointDataFrame
+
+```{r}
+test_data_sp <- test_data %>%
+  as_Spatial()
+test_data_sp
+```
+
+### Computing adaptive bandwidth for the test data
+
+```{r}
+#| eval: false
+gwr_bw_test_adaptive <- bw.gwr(monthly_rent ~ flat_type +
+                  no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + no_of_hawker_500m + prox_childcare +
+                  prox_hawker + no_of_busstop_500m + prox_busstop + 
+                  no_of_shoppingmall_1km + prox_shoppingmall +
+                  prox_mrt + prox_prisch +
+                  prox_cbd,
+                  data=test_data_sp,
+                  approach="CV",
+                  kernel="gaussian",
+                  adaptive=TRUE,
+                  longlat=FALSE)
+```
+```{r}
+#| eval: false
+write_rds(gwr_bw_test_adaptive, "data/rds/model/gwr_bw_test_adaptive.rds")
+```
+
+```{r}
+#| eval: false
+gwr_bw_test_adaptive <- read_rds("data/rds/model/gwr_bw_test_adaptive.rds")
+```
+
+```{r}
+gwr_bw_test_adaptive <- read_rds("data/rds/model/gwr_bw_test_adaptive.rds")
+```
+### Computing predicted values of the test data
+```{r}
+#| eval: false
+gwr_pred <- gwr.predict(formula = monthly_rent ~ flat_type +
+                  no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + no_of_hawker_500m + prox_childcare +
+                  prox_hawker + no_of_busstop_500m + prox_busstop + 
+                  no_of_shoppingmall_1km + prox_shoppingmall +
+                  prox_mrt + prox_prisch +
+                  prox_cbd, 
+                        data=train_data_sp, 
+                        predictdata = test_data_sp, 
+                        bw=40, 
+                        kernel = 'gaussian', 
+                        adaptive=TRUE, 
+                        longlat = FALSE)
+```
+
+## Preparing coordinates data
+
+### Extracting coordinates data
+
+The code chunk below extract the x,y coordinates of the full, training and test data sets.
+
+```{r}
+coords <- st_coordinates(resale_sf)
+coords_train <- st_coordinates(train_data)
+coords_test <- st_coordinates(test_data)
+```
+
+Before continue, we write all the output into rds for future used.
+
+```{r}
+#| eval: false
+coords_train <- write_rds(coords_train, "data/rds/model/coords_train.rds" )
+coords_test <- write_rds(coords_test, "data/rds/model/coords_test.rds" )
+```
+```{r}
+#| eval: false
+coords_train <- read_rds("data/rds/model/coords_train.rds" )
+coords_test <- read_rds("data/rds/model/coords_test.rds" )
+```
+### Droping geometry field
+
+First, we will drop geometry column of the sf data.frame by using `st_drop_geometry()` of sf package.
+
+```{r}
+train_data <- train_data %>% 
+  st_drop_geometry()
+```
+
+## Calibrating Random Forest Model
+
+In this section, you will learn how to calibrate a model to predict HDB resale price by using random forest function of [**ranger**](https://cran.r-project.org/web/packages/ranger/index.html) package.
+
+```{r}
+set.seed(1234)
+rf <- ranger(monthly_rent ~ flat_type +
+                  no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + no_of_hawker_500m + prox_childcare +
+                  prox_hawker + no_of_busstop_500m + prox_busstop + 
+                  no_of_shoppingmall_1km + prox_shoppingmall +
+                  prox_mrt + prox_prisch +
+                  prox_cbd,
+             data=train_data)
+rf
+```
+
+```{r}
+write_rds(rf, "data/rds/model/rf.rds")
+```
+
+```{r}
+rf <- read_rds("data/rds/model/rf.rds")
+rf
+```
+
+## Calibrating Geographical Random Forest Model
+
+In this section, you will learn how to calibrate a model to predict HDB resale price by using `grf()` of [**SpatialML**](https://cran.r-project.org/web/packages/ranger/index.html) package.
+
+### Calibrating using training data
+
+The code chunk below calibrate a geographic ranform forest model by using `grf()` of **SpatialML** package.
+
+```{r}
+#| eval: false
+set.seed(1234)
+gwRF_adaptive <- grf(formula = monthly_rent ~ flat_type +
+                  no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + no_of_hawker_500m + prox_childcare +
+                  prox_hawker + no_of_busstop_500m + prox_busstop + 
+                  no_of_shoppingmall_1km + prox_shoppingmall +
+                  prox_mrt + prox_prisch +
+                  prox_cbd,
+                     dframe=train_data, 
+                     bw=55,
+                     kernel="adaptive",
+                     coords=coords_train)
+```
+
+Let's save the model output by using the code chunk below.
+
+```{r eval=FALSE}
+#| eval: false
+write_rds(gwRF_adaptive, "data/rds/model/gwRF_adaptive.rds")
+```
+
+The code chunk below can be used to retrieve the save model in future.
+
+```{r}
+gwRF_adaptive <- read_rds("data/rds/model/gwRF_adaptive.rds")
+```
+
+### Predicting by using test data
+
+#### Preparing the test data
+
+The code chunk below will be used to combine the test data with its corresponding coordinates data.
+
+```{r}
+test_data <- cbind(test_data, coords_test) %>%
+  st_drop_geometry()
+```
+
+#### Predicting with test data
+
+Next, `predict.grf()` of spatialML package will be used to predict the resale value by using the test data and gwRF_adaptive model calibrated earlier.
+
+```{r}
+#| eval: false
+gwRF_pred <- predict.grf(gwRF_adaptive, 
+                           test_data, 
+                           x.var.name="X",
+                           y.var.name="Y", 
+                           local.w=1,
+                           global.w=0)
+```
+
+Before moving on, let us save the output into rds file for future use.
+
+```{r}
+#| eval: false
+gwRF_pred <- write_rds(gwRF_pred, "data/rds/model/GRF_pred.rds")
+```
+
+#### Converting the predicting output into a data frame
+
+The output of the `predict.grf()` is a vector of predicted values. It is wiser to convert it into a data frame for further visualisation and analysis.
+
+```{r}
+gwRF_pred <- read_rds("data/rds/model/GRF_pred.rds")
+```
+```{r}
+GRF_pred_df <- as.data.frame(gwRF_pred)
+```
+
+In the code chunk below, `cbind()` is used to append the predicted values onto test_datathe
+
+```{r}
+test_data_p <- cbind(test_data, GRF_pred_df)
+```
+
+```{r}
+write_rds(test_data_p, "data/rds/model/test_data_p.rds")
+```
+
+### Calculating Root Mean Square Error
+
+The root mean square error (RMSE) allows us to measure how far predicted values are from observed values in a regression analysis. In the code chunk below, rmse() of Metrics package is used to compute the RMSE.
+
+```{r}
+rmse(test_data_p$resale_price, 
+     test_data_p$gwRF_pred)
+```
+
+### Visualising the predicted values
+
+Alternatively, scatterplot can be used to visualise the actual resale price and the predicted resale price by using the code chunk below.
+
+```{r}
+ggplot(data = test_data_p,
+       aes(x = gwRF_pred,
+           y = resale_price)) +
+  geom_point()
+```
+
+::: callout-note
+A better predictive model should have the scatter point close to the diagonal line. The scatter plot can be also used to detect if any outliers in the model.
+:::
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r}
 northeasten.islands <- subset(mpsz_sf, mpsz_sf$SUBZONE_N == "NORTH-EASTERN ISLANDS")

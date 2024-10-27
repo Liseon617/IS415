@@ -86,6 +86,14 @@ Reading the input data sets. It is in simple feature data frame.
 mdata <- read_rds("data/Hands-on_Ex12/mdata.rds")
 ```
 
+```{r}
+str(mdata)
+```
+
+```{r}
+names(mdata)
+```
+
 ### Data Sampling
 
 The entire data are split into training and test data sets with 65% and 35% respectively by using *initial_split()* of **rsample** package. rsample is one of the package of tigymodels.
