@@ -1,5 +1,5 @@
 ```{r}
-pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, spdep, sfdep, ggplot2, jsonlite)
+pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, spdep, sfdep, ggplot2, jsonlite, olsrr, corrplot, ggpubr, GWmodel, gtsummary)
 ```
 
 ```{r}
@@ -14,6 +14,21 @@ mpsz_sf <- st_read(dsn = "data/MP14_SUBZONE_WEB_PL", layer = "MP14_SUBZONE_WEB_P
 st_crs(mpsz_sf)
 ```
 ```{r}
+resale_5yr_sf <- read_rds("data/resale_5yr_sf.rds")
+resale_sf <- read_rds("data/resale_sf.rds")
+```
+
+```{r}
+tmap_options(check.and.fix = TRUE)
+tm_shape(resale_sf) +  
+  tm_dots(col = "resale_price",
+          alpha = 0.6,
+          style="quantile") +
+  # sets minimum zoom level to 11, sets maximum zoom level to 14
+  tm_view(set.zoom.limits = c(11,14))
+```
+
+```{r}
 northeasten.islands <- subset(mpsz_sf, mpsz_sf$SUBZONE_N == "NORTH-EASTERN ISLANDS")
 southern.islands <- subset(mpsz_sf, mpsz_sf$SUBZONE_N == "SOUTHERN GROUP")
 sudong <- subset(mpsz_sf, mpsz_sf$SUBZONE_N == "SUDONG")
@@ -25,10 +40,12 @@ outerislands <- dplyr::bind_rows(list(northeasten.islands,southern.islands,sudon
 ```{r}
 sg_sf <- st_difference(mpsz_sf, outerislands)
 ```
+
 ```{r}
 par(mar = c(0,0,0,0))
 plot(st_geometry(sg_sf))
 ```
+
 ```{r}
 # Step 1: Read the CSV files
 mrt_lrt_station <- read.csv("data/mrt_lrt_stations.csv")
@@ -42,6 +59,7 @@ head(hdb_2024)
 str(hdb_2024$month)
 hdb_2024$month <- as.Date(hdb_2024$month)
 ```
+
 ```{r}
 hdb_2022_filtered <- hdb_2024[hdb_2024$month >= as.Date("2017-01-01") & hdb_2024$month <= as.Date("2022-12-31"), ]
 ```
