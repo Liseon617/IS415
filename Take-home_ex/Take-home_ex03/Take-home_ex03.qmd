@@ -1,0 +1,701 @@
+```{r}
+pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, spdep, sfdep, ggplot2, jsonlite, olsrr, corrplot, ggpubr, GWmodel, gtsummary, Metrics, rsample, SpatialML)
+```
+
+```{r}
+#mrt_sf <- st_read(dsn = "data/mrt_stations", layer = "mrt_stations")
+
+#st_crs(mrt_sf)
+```
+
+```{r}
+#mpsz_sf <- st_read(dsn = "data/MP14_SUBZONE_WEB_PL", layer = "MP14_SUBZONE_WEB_PL")
+
+#st_crs(mpsz_sf)
+```
+
+```{r}
+rental_sf <- read_rds("data/rental_sf.rds")
+```
+
+```{r}
+summary(rental_sf)
+glimpse(rental_sf)
+```
+
+As we are more interested 
+
+
+```{r}
+set.seed(1234)
+rental_split <- initial_split(rental_sf, 
+                              prop = 6.5/10,)
+train_data <- training(rental_split)
+test_data <- testing(rental_split)
+```
+
+```{r}
+write_rds(train_data, "data/rds/model/train_data.rds")
+write_rds(test_data, "data/rds/model/test_data.rds")
+```
+
+```{r}
+train_data <- read_rds("data/rds/model/train_data.rds")
+test_data <- read_rds("data/rds/model/test_data.rds")
+```
+
+```{r}
+rental_nogeo <- rental_sf %>%
+  select(7:19) %>%
+  st_drop_geometry()
+```
+
+```{r}
+names(rental_nogeo)
+```
+
+::: panel-tabset
+## Order - AOE
+
+```{r, fig.height=12,fig.width=12}
+corrplot::corrplot(cor(rental_nogeo), 
+                   diag = FALSE, 
+                   order = "AOE",
+                   tl.pos = "td", 
+                   tl.cex = 0.5, 
+                   method = "number", 
+                   type = "upper")
+```
+
+## Order - FPC
+
+```{r, fig.height=12,fig.width=12}
+corrplot::corrplot(cor(rental_nogeo), 
+                   diag = FALSE, 
+                   order = "FPC",
+                   tl.pos = "td", 
+                   tl.cex = 0.5, 
+                   method = "number", 
+                   type = "upper")
+```
+
+## Type - Lower
+
+```{r, fig.height=12,fig.width=12}
+corrplot::corrplot(cor(rental_nogeo), 
+                   diag = FALSE, 
+                   order = "AOE",
+                   tl.pos = "ld", 
+                   tl.cex = 0.5, 
+                   method = "number", 
+                   type = "lower")
+```
+
+## Type - Full
+
+```{r, fig.height=12,fig.width=12}
+corrplot::corrplot(cor(rental_nogeo), 
+                   diag = FALSE, 
+                   order = "AOE",
+                   tl.pos = "full", 
+                   tl.cex = 0.5, 
+                   method = "number", 
+                   type = "full")
+```
+
+## Method - Circle
+
+```{r, fig.height=12,fig.width=12}
+corrplot::corrplot(cor(rental_nogeo), 
+                   diag = FALSE, 
+                   order = "AOE",
+                   tl.pos = "td", 
+                   tl.cex = 0.5, 
+                   method = "circle", 
+                   type = "upper")
+```
+:::
+
+## Retriving the Stored Data
+
+```{r}
+train_data <- read_rds("data/rds/model/train_data.rds")
+test_data <- read_rds("data/rds/model/test_data.rds")
+```
+
+```{r}
+price_mlr <- lm(monthly_rent ~ 
+                  flat_type + no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + no_of_hawker_500m + prox_childcare +
+                  prox_hawker + no_of_busstop_500m + prox_busstop + 
+                  no_of_shoppingmall_1km + prox_shoppingmall +
+                  prox_mrt + prox_prisch +
+                  prox_cbd,
+                data=train_data)
+
+summary(price_mlr)
+```
+
+Based on the coefficient section, we can see that not all the independent variables are statistically significant, and some variables can be removed from our model based on their p-value field (Pr > 0.05). 
+
+The following variables should be removed from the model due to their high p-values, indicating they are not statisitically significant predictors of monthly rent:
+**1. no_of_hawker_500m (p = 0.89609)**
+**2. prox_childcare (p = 0.69011)**
+**3. no_of_busstop_500m (p = 0.38677)**
+**4. prox_busstop (p = 0.37263)**
+**5. no_of_shoppingmall_1km (p = 0.56886)**
+
+Now we will update the model
+```{r}
+price_mlr <- lm(monthly_rent ~ 
+                  flat_type + no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_prisch + prox_cbd,
+                data=train_data)
+
+summary(price_mlr)
+```
+
+```{r}
+write_rds(price_mlr, "data/rds/model/price_mlr.rds")
+```
+
+```{r}
+price_mlr <- read_rds("data/rds/model/price_mlr.rds")
+```
+
+```{r}
+train_data_sp <- as_Spatial(train_data)
+train_data_sp
+```
+
+```{r}
+bw_adaptive <- bw.gwr(monthly_rent ~ 
+                  flat_type + no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_prisch + prox_cbd,
+                  data=train_data_sp,
+                  approach="CV",
+                  kernel="gaussian",
+                  adaptive=TRUE,
+                  longlat=FALSE)
+```
+```{r}
+write_rds(bw_adaptive, "data/rds/model/bw_adaptive.rds")
+```
+
+```{r}
+bw_adaptive <- read_rds("data/rds/model/bw_adaptive.rds")
+```
+:::{.callout-tip title="Inisghts"}
+1. **Optimal Bandwidth:**
+-   Here, the optimal adaptive bandwidth is found to be **184** (based on the lowest CV score of **4484696643**).
+-   This bandwidth indicates that for each local regression in the GWR model, the 184 nearest neighbors are included, providing a balance between capturing spatial variation and maintaining model stability.
+:::
+
+After identifying the optimal adaptive bandwidth (`bw_adaptive`) for running a Geographically Weighted Regression (GWR) with cross-validation, we use this `bw_adaptive` value in the next step with `gwr.basic` will allow you to fit the GWR model itself.
+
+In short, this step allows you to create a spatially-varying model, which helps identify how different factors contribute to `monthly_rent` differently across locations.
+
+```{r}
+gwr_adaptive <- gwr.basic(formula = monthly_rent ~ 
+                  flat_type + no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_prisch + prox_cbd,
+                  data=train_data_sp,
+                          bw=bw_adaptive, 
+                          kernel = 'gaussian', 
+                          adaptive=TRUE,
+                          longlat = FALSE)
+```
+
+```{r}
+write_rds(gwr_adaptive, "data/rds/model/gwr_adaptive.rds")
+```
+
+```{r}
+gwr_adaptive <- read_rds("data/rds/model/gwr_adaptive.rds")
+```
+
+This code produces the GWR model using the adaptive bandwidth previously calculated. Running this step is essential for performing the actual localized regression analysis and obtaining spatially varying coefficients, which will reveal how the influence of each predictor on rental prices varies across the area. This model will give you insights into spatial patterns in rental prices, helping you to understand which factors are most significant in different locations.
+
+```{r}
+gwr_adaptive
+```
+
+{.callout-tip title="Insights"}
+This analysis captures how each variable's impact on rental prices varies across different spatial locations. Here’s a breakdown of the key results:
+
+### 1. **Global Regression Results**
+Significant variables (based on p-values < 0.05) include:
+- **flat_type**: Different flat types significantly impact rental prices.
+- Proximity to various facilities (e.g., **prox_kindergarten**, **prox_hawker**, **prox_shoppingmall**, **prox_mrt**, **prox_cbd**) also shows significant impact, with proximity to the Central Business District (`prox_cbd`) having a strong negative effect.
+
+### 2. **GWR Results**
+-   **Adaptive Bandwidth**: The optimal bandwidth is 184, determined via cross-validation. This bandwidth allows the model to capture spatially varying relationships, adjusting the number of nearest neighbors for each location.
+-   **prox_cbd** has a median negative effect but varies across locations, indicating that distance to the CBD does not uniformly affect rental prices.
+
+-   **Insignificant Features:**
+All of the features listed have p-values less than 0.05, indicating that they are statistically significant. However, if you're looking for features that are less impactful:
+  1.    prox_kindergarten: p = 0.00162
+  2.    prox_prisch: p = 0.02165
+
+-   **R-squared**: 0.4198, indicating that the GWR model explains around 41.98% of the variance in rental prices—an improvement over the global model.
+-   **AICc**: 256327.1, which is lower than the global model's AIC, suggesting a better fit when accounting for spatial variation.
+
+### 3. **Diagnostics**
+-   **Residual Sum of Squares (RSS)**: Lower in GWR (4238886846 vs. 5009516507 in the global model), indicating better fit.
+-   **Adjusted R-squared**: 0.3987 for GWR, higher than the global model’s, suggesting improved explanatory power.
+
+The GWR model thus captures complex spatial heterogeneity in rental price determinants, which would be missed by a non-spatial global regression model.
+:::
+
+
+
+### Converting the test data from sf data.frame to SpatialPointDataFrame
+
+```{r}
+test_data_sp <- test_data %>%
+  as_Spatial()
+test_data_sp
+```
+
+### Computing adaptive bandwidth for the test data
+
+```{r}
+gwr_bw_test_adaptive <- bw.gwr(monthly_rent ~ 
+                  flat_type + no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_prisch + prox_cbd,
+                  data=test_data_sp,
+                  approach="CV",
+                  kernel="gaussian",
+                  adaptive=TRUE,
+                  longlat=FALSE)
+```
+::: {.callout-tip title="Insight"}
+The bandwidth determines how many nearest neighbors are considered for each local regression, which impacts the model's ability to capture local variations effectively. Here’s a breakdown:
+
+1. **Bandwidth Selection Process**:
+   - The algorithm iteratively tests different bandwidths and computes a cross-validation (CV) score for each.
+   - The CV score is a measure of the model's predictive error; a lower score indicates a better fit for that bandwidth.
+   - As bandwidth decreases, the CV score generally decreases until it reaches an optimal point, after which it may increase or plateau.
+
+2. **Optimal Bandwidth**:
+   - Here, the optimal adaptive bandwidth is found to be **184** (based on the lowest CV score of **4484696643**).
+   - This bandwidth indicates that for each local regression in the GWR model, the 184 nearest neighbors are included, providing a balance between capturing spatial variation and maintaining model stability.
+
+3. **Interpretation**:
+   - With an adaptive bandwidth of 184, the model is configured to adjust the neighborhood size according to the density of the data points. This is especially useful in spatial data where areas with different densities might require varying neighborhood sizes to accurately model local effects.
+:::
+```{r}
+#| eval: false
+write_rds(gwr_bw_test_adaptive, "data/rds/model/gwr_bw_test_adaptive.rds")
+```
+
+```{r}
+gwr_bw_test_adaptive <- read_rds("data/rds/model/gwr_bw_test_adaptive.rds")
+```
+
+## Preparing coordinates data
+
+### Extracting coordinates data
+The code chunk below extract the x,y coordinates of the full, training and test data sets.
+
+```{r}
+coords <- st_coordinates(rental_sf)
+coords_train <- st_coordinates(train_data)
+coords_test <- st_coordinates(test_data)
+```
+
+Before continue, we write all the output into rds for future used.
+
+```{r}
+#| eval: false
+coords_train <- write_rds(coords_train, "data/rds/model/coords_train.rds" )
+coords_test <- write_rds(coords_test, "data/rds/model/coords_test.rds" )
+```
+
+```{r}
+#| eval: false
+coords_train <- read_rds("data/rds/model/coords_train.rds" )
+coords_test <- read_rds("data/rds/model/coords_test.rds" )
+```
+
+### Droping geometry field
+
+First, we convert the Character Columns to Factors within both the `train_data` and `test_data`
+```{r}
+train_data$flat_type <- as.factor(train_data$flat_type)
+train_data$town <- as.factor(train_data$town)
+train_data$region <- as.factor(train_data$region)
+
+test_data$flat_type <- as.factor(test_data$flat_type)
+test_data$town <- as.factor(test_data$town)
+test_data$region <- as.factor(test_data$region)
+```
+
+
+We will then drop geometry column of the sf data.frame by using `st_drop_geometry()` of sf package. This prepares the data for modeling while keeping the spatial information separate.
+```{r}
+train_data <- train_data %>% 
+  st_drop_geometry()
+```
+
+## Calibrating Random Forest Model
+
+In this section, you will learn how to calibrate a model to predict HDB rental price by using random forest function of [**ranger**](https://cran.r-project.org/web/packages/ranger/index.html) package.
+
+```{r}
+set.seed(1234)
+rf <- ranger(monthly_rent ~ 
+                  flat_type + no_of_kindergarten_500m + prox_kindergarten +
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_prisch + prox_cbd,
+             data=train_data)
+rf
+```
+
+```{r}
+write_rds(rf, "data/rds/model/rf.rds")
+```
+
+```{r}
+rf <- read_rds("data/rds/model/rf.rds")
+```
+
+## Calibrating Geographical Random Forest Model
+
+In this section, you will learn how to calibrate a model to predict HDB rental price by using `grf()` of [**SpatialML**](https://cran.r-project.org/web/packages/ranger/index.html) package.
+
+### Calibrating using training data
+
+Based on the output of the initial GWR model (gwr_adaptive), all of the features listed have p-values less than **0.05**, indicating that they are statistically significant. However, if you're looking for features that are less impactful, you can consider examining the magnitude of the coefficients alongside their p-values:
+
+1. prox_kindergarten: Coefficient = -0.08478 (indicating a negative relationship, but relatively low impact)
+2. prox_prisch: Coefficient = 0.03800 (also showing a weak relationship)
+
+The code chunk below calibrate a geographic random forest model by using `grf()` of **SpatialML** package.
+
+```{r}
+#| eval: false
+set.seed(1234)
+gwRF_adaptive <- grf(formula = monthly_rent ~ 
+                  flat_type + no_of_kindergarten_500m + 
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_cbd,
+                  dframe=train_data, 
+                  bw=70,                   # Broader bandwidth
+                  kernel="adaptive",
+                  ntree=350,
+                  coords=coords_train,
+                  min.node.size=10)  
+```
+
+Let's save the model output by using the code chunk below.
+
+```{r eval=FALSE}
+#| eval: false
+write_rds(gwRF_adaptive, "data/rds/model/gwRF_adaptive.rds")
+```
+
+The code chunk below can be used to retrieve the save model in future.
+
+```{r}
+gwRF_adaptive <- read_rds("data/rds/model/gwRF_adaptive.rds")
+```
+
+### Predicting by using test data
+
+#### Preparing the test data
+
+The code chunk below will be used to combine the test data with its corresponding coordinates data.
+
+```{r}
+# Combine test data with coordinates and drop geometry
+test_data <- cbind(test_data, coords_test) %>%
+  st_drop_geometry()
+```
+
+```{r}
+# Define the required variables
+required_vars <- c("flat_type", "no_of_kindergarten_500m", 
+                   "no_of_childcare_500m", "prox_hawker", 
+                   "prox_shoppingmall", "prox_mrt", "prox_cbd", "X", "Y")
+
+# Check which required variables are missing
+missing_vars <- setdiff(required_vars, names(test_data))
+if (length(missing_vars) > 0) {
+  print(paste("Missing variables:", paste(missing_vars, collapse = ", ")))
+} else {
+  print("All required variables are present.")
+}
+
+test_data_subset <- test_data[, required_vars, drop = FALSE]
+```
+
+#### Predicting with test data
+
+Next, `predict.grf()` of spatialML package will be used to predict the rental value by using the test data and gwRF_adaptive model calibrated earlier.
+
+```{r}
+#| eval: false
+gwRF_pred <- predict.grf(gwRF_adaptive, 
+                           test_data_subset, 
+                           x.var.name="X",
+                           y.var.name="Y", 
+                           local.w=1,
+                           global.w=0)
+```
+
+Before moving on, let us save the output into rds file for future use.
+
+```{r}
+write_rds(gwRF_pred, "data/rds/model/GRF_pred.rds")
+```
+
+#### Converting the predicting output into a data frame
+
+The output of the `predict.grf()` is a vector of predicted values. It is wiser to convert it into a data frame for further visualisation and analysis.
+
+```{r}
+gwRF_pred <- read_rds("data/rds/model/GRF_pred.rds")
+```
+
+```{r}
+GRF_pred_df <- as.data.frame(gwRF_pred)
+```
+
+In the code chunk below, `cbind()` is used to append the predicted values onto test_data
+
+```{r}
+test_data_p <- cbind(test_data, GRF_pred_df)
+```
+
+```{r}
+write_rds(test_data_p, "data/rds/model/test_data_p.rds")
+```
+
+### Calculating Root Mean Square Error
+
+The root mean square error (RMSE) allows us to measure how far predicted values are from observed values in a regression analysis. In the code chunk below, rmse() of Metrics package is used to compute the RMSE.
+
+```{r}
+rmse(test_data_p$monthly_rent, 
+     test_data_p$gwRF_pred)
+```
+```{r}
+mae(test_data_p$monthly_rent, 
+     test_data_p$gwRF_pred)
+```
+
+### Visualising the predicted values
+
+Alternatively, scatterplot can be used to visualise the actual rental price and the predicted rental price by using the code chunk below.
+
+```{r}
+# Step 1: Identify and print duplicate column names
+duplicate_columns <- names(test_data_p)[duplicated(names(test_data_p))]
+print(duplicate_columns)
+
+# Step 2: Remove duplicate columns (if any exist)
+test_data_p <- test_data_p[, !duplicated(names(test_data_p))]
+
+# Step 3: Plot with ggplot2
+ggplot(data = test_data_p, aes(x = gwRF_pred, y = monthly_rent)) +
+  geom_point() +
+  labs(x = "Predicted Rent", y = "Actual Monthly Rent", title = "Predicted vs Actual Monthly Rent")
+```
+
+
+```{r}
+ggplot(data = test_data_p, aes(x = gwRF_pred, y = monthly_rent)) +
+  geom_point(alpha = 0.6, color = "blue") +  # Adjust point transparency and color
+  geom_smooth(method = "lm", se = TRUE, color = "red", linetype = "dashed") +  # Best fit line
+  labs(title = "Predicted Monthly Rent vs. Geographically Weighted RF Predictions",
+       x = "Geographically Weighted RF Predictions",
+       y = "Monthly Rent")
+  theme_minimal() + 
+  theme(plot.title = element_text(hjust = 0.5),  # Center the title
+        axis.title = element_text(size = 12),  # Increase axis title size
+        axis.text = element_text(size = 10))   # Increase axis text size
+```
+
+::: {.callout-tip title="Notes"}
+A better predictive model should have the scatter point close to the diagonal line. The scatter plot can be also used to detect if any outliers in the model.
+:::
+
+### Fine-Tuning Model Parameters
+```{r}
+# Try different bandwidth values
+bandwidths <- c(30, 50, 70, 90, 110)
+results <- list()
+
+for (bw in bandwidths) {
+  set.seed(1234)
+  gwRF_model <- grf(formula = monthly_rent ~ 
+                    flat_type + no_of_kindergarten_500m + 
+                    no_of_childcare_500m + prox_hawker + 
+                    prox_shoppingmall + prox_mrt + prox_cbd,
+                    dframe=train_data, 
+                    bw=bw,                   
+                    kernel="adaptive",
+                    ntree=350,
+                    coords=coords_train,
+                    min.node.size=10)
+  
+  # Predict using the training data or a validation set
+  pred <- predict.grf(gwRF_model, test_data_subset, 
+                       x.var.name="X", y.var.name="Y", 
+                       local.w=1, global.w=0)
+  
+  # Calculate RMSE or other metrics
+  rmse_value <- rmse(test_data$monthly_rent, pred)
+  results[[as.character(bw)]] <- rmse_value
+}
+
+# Compare results
+print(results)
+```
+
+
+```{r}
+library(spgwr) # For GWR
+set.seed(123)  # For reproducibility
+sample_size <- 5000  # Choose a reasonable sample size
+train_data_sample <- train_data[sample(1:nrow(train_data), sample_size), ]
+coords_sample <- coords_train[sample(1:nrow(coords_train), sample_size), ]
+
+
+gwr_model <- gwr(monthly_rent ~ flat_type + no_of_kindergarten_500m + 
+                  no_of_childcare_500m + prox_hawker + 
+                  prox_shoppingmall + prox_mrt + prox_cbd, 
+                  data=train_data_sample, coords=coords_sample, bandwidth=70)
+
+# Summary of the GWR model
+summary(gwr_model)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+northeasten.islands <- subset(mpsz_sf, mpsz_sf$SUBZONE_N == "NORTH-EASTERN ISLANDS")
+southern.islands <- subset(mpsz_sf, mpsz_sf$SUBZONE_N == "SOUTHERN GROUP")
+sudong <- subset(mpsz_sf, mpsz_sf$SUBZONE_N == "SUDONG")
+semakau <- subset(mpsz_sf,mpsz_sf$SUBZONE_N == "SEMAKAU")
+
+outerislands <- dplyr::bind_rows(list(northeasten.islands,southern.islands,sudong,semakau))
+```
+
+```{r}
+sg_sf <- st_difference(mpsz_sf, outerislands)
+```
+
+```{r}
+par(mar = c(0,0,0,0))
+plot(st_geometry(sg_sf))
+```
+
+```{r}
+# Step 1: Read the CSV files
+mrt_lrt_station <- read.csv("data/mrt_lrt_stations.csv")
+bus_stop <- read.csv("data/bus_stops.csv")
+hdb_2024 <- read.csv("data/hdb_2024-30sep.csv")
+```
+
+```{r}
+# Check the first few rows and the structure of the dataset
+head(hdb_2024)
+str(hdb_2024$month)
+hdb_2024$month <- as.Date(hdb_2024$month)
+```
+
+```{r}
+hdb_2022_filtered <- hdb_2024[hdb_2024$month >= as.Date("2017-01-01") & hdb_2024$month <= as.Date("2022-12-31"), ]
+```
+
+```{r}
+# Step 2: Convert to spatial objects
+# Convert MRT/LRT stations to spatial points
+mrt_lrt_station_sf <- st_as_sf(mrt_lrt_station, coords = c("LONGITUDE", "LATITUDE"), crs = 4326)
+
+# Convert Bus stops to spatial points
+bus_stop_sf <- st_as_sf(bus_stop, coords = c("Longitude", "Latitude"), crs = 4326)
+
+# Convert hdb_2024 to spatial points
+hdb_2022_filtered <- st_as_sf(hdb_2022_filtered, coords = c("longitude", "latitude"), crs = 4326)
+```
+
+```{r}
+# Step 1: Read the JSON file
+json_file_path <- "data/private_property_transaction.json"
+  data <- fromJSON(json_file_path)
+
+# Step 2: Extract x and y coordinates for all properties
+# Initialize vectors to store the coordinates
+street <- c()
+x_coordinates <- c()
+y_coordinates <- c()
+
+# Loop through each result (result1 to result5)
+for (i in 1:length(data)) {
+  # Construct the result name dynamically (result1, result2, etc.)
+  result_name <- paste0("result", i)
+  
+  # Check if the result exists in the data
+  if (result_name %in% names(data)) {
+    # Extract street, x, and y coordinates
+    street <- c(street, data[[result_name]]$street)
+    x_coordinates <- c(x_coordinates, data[[result_name]]$x)
+    y_coordinates <- c(y_coordinates, data[[result_name]]$y)
+  }
+}
+
+# Step 3: Create a data frame to store the results
+coordinates_df <- data.frame(
+  street = street,
+  x = as.numeric(x_coordinates),  # Convert to numeric
+  y = as.numeric(y_coordinates)   # Convert to numeric
+)
+# Step 4: Remove entries with missing x or y values
+coordinates_df <- na.omit(coordinates_df)
+
+private_properties_sf <- st_as_sf(coordinates_df, coords = c("x", "y"), crs = 3414)  # SVY21 CRS
+
+# Step 4: Check all the coordinates
+st_crs(private_properties_sf)
+st_crs(mrt_lrt_station_sf)
+st_crs(bus_stop_sf)
+st_crs(hdb_2022_filtered)
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-width: 12
+
+tm_shape(sg_sf) +  # Assuming regions_sf is the Singapore region shapefile
+  tm_polygons(col = "REGION_N") +  # Color regions
+  tm_shape(mrt_lrt_station_sf) +  # Add MRT/LRT stations
+  tm_dots(col = "blue", size = 0.4) +  # Plot as blue dots
+  tm_shape(hdb_2022_filtered) +  # Add bus stops
+  tm_dots(col = "black") +  # Plot as red dots
+  tm_shape(private_properties_sf) +  # Add bus stops
+  tm_dots(col = "black") +  # Plot as red dots
+  tm_layout(main.title = "MRT/LRT Stations and Bus Stops in Singapore",
+            main.title.position = "center",
+            main.title.size = 1.6)
+```
