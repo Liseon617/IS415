@@ -390,12 +390,6 @@ Let's save the model output by using the code chunk below.
 write_rds(gwRF_adaptive, "data/Hands-on_Ex12/gwRF_adaptive.rds")
 ```
 
-The code chunk below can be used to retrieve the save model in future.
-
-```{r}
-gwRF_adaptive <- read_rds("data/Hands-on_Ex12/gwRF_adaptive.rds")
-```
-
 ### Predicting by using test data
 
 #### Preparing the test data
