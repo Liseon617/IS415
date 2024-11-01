@@ -1,29 +1,125 @@
-```{r}
-pacman::p_load(sf, raster, spatstat, tmap, tidyverse, RColorBrewer, spdep, sfdep, ggplot2, jsonlite, olsrr, corrplot, ggpubr, GWmodel, gtsummary, Metrics, rsample, SpatialML)
-```
+---
+title: "Take-home Exercise 3: Geographically Weighted Predictive Models: Rental rental price prediction based on location based data"
+author: "Brian Lim"
+date: "Octor 27, 2024"
+date-modified: "last-modified"
+categories:
+  - Analysis
+  - R
+  - sf
+  - spdep 
+  - tmap
+  - tidyverse 
+  - GWmodel
+  - SpatialML 
+  - rsample 
+  - Metrics
+  - olsrr
+format: html
+editor: visual
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
+  cache.lazy: true
+---
+
+## 3.1 Overview
+
+In this take-home exercise, I will focus on prototyping a Geographically Weighted Predictive Model for my group’s Shiny App. This model allows users to input specific values for key variables and obtain rental price predictions for HDB flats in Singapore. The model considers variables such as flat type, proximity to kindergartens and MRT stations, the number of childcare centers within 500 meters, and distance to amenities like hawker centers, shopping malls, primary schools, and the CBD. By capturing these localized effects, the predictive model provides a user-friendly, data-driven tool for estimating monthly rent based on a flat’s characteristics and surrounding environment. The data preparation and Exploratory Data Analysis were handled by my groupmate, so for this exercise, I will load the data directly from an RDS file. For this exercise, I will load the prepared dataset directly from an RDS file for efficient model testing.
+
+## 3.2 Getting Started
+
+For this exercise, the following R packages will be used:
+
+-   [**sf**](https://cran.r-project.org/web/packages/sf/) for handling geospatial data.
+
+-   [**spdep**](https://cran.r-project.org/web/packages/spdep/index.html) for spatial dependence analysis, including computing spatial weights and conducting spatial autocorrelation tests such as Moran's I and Geary's C
+
+-   [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html), a package for creating high-quality static and interactive maps, leveraging the Leaflet API for interactive visualizations.
+
+-   [**tidyverse**](https://www.tidyverse.org/) for performing data science tasks such as importing, wrangling and visualising data.
+
+-   [**GWmodel**](https://cran.r-project.org/web/packages/GWmodel/) provides techniques from a particular branch of spatial statistics,termed geographically-weighted (GW) models. GW models suit situations when data are not described well by some global model, but where there are spatial regions where a suitably localised calibration provides a better description.
+
+-   [**SpatialML**](https://cran.r-project.org/web/packages/SpatialML) for a geographically weighted random forest regression including a function to find the optical bandwidth.
+
+-   [**rsample**](https://cran.r-project.org/web/packages/rsample) to create and summarize different types of resampling objects.
+
+-   [**Metrics**](https://cran.r-project.org/web/packages/Metrics) implements metrics for regression, time series, binary classification, classification, and information retrieval problems.
+
+-   ["olsrr"](https://www.rdocumentation.org/packages/olsrr/versions/0.6.0) provides tools for building OLS regression models using R
+
+As readr, tidyr and dplyr are part of tidyverse package. The code chunk below will suffice to install and load the required packages in RStudio.
+
+To install and load these packages into the R environment, we use the `p_load` function from the `pacman` package:
 
 ```{r}
-#mrt_sf <- st_read(dsn = "data/mrt_stations", layer = "mrt_stations")
-
-#st_crs(mrt_sf)
+pacman::p_load(sf, spdep, tmap, tidyverse, GWmodel, SpatialML, rsample, Metrics, olsrr)
 ```
+
+## 3.3 Importing Data into R
+
+We will first import the rental dataset prepared by one of my teammates. Please refer to [here](https://is415-gaa-georgia-ng.netlify.app/take-home_ex/take-home_ex03/take-home_ex03) for the details of the data wrangling.
+
+-   **`rental.sf`** =\> contains the rental data from Jan 2020 to Sept 2024, as well as other fields like:
+
+    -   Dependent:
+
+        -   **Monthly Rental fee**: `monthly_rent`
+
+    -   Continuous:
+
+        -   **Proximity measure**: kindergarten, childcare, hawker, bus stops, shopping mall, mrt, primary schools, cbd
+
+        -   **Count of amenities within specific distance**: kindergarten, childcare, hawker, bus stops, shopping mall,
+
+    -   Categorical:
+
+        -   **Flat Type**: `flat_type`
+
+        -   **Town**: `town`
+
+        -   **Region**: `region`
 
 ```{r}
-#mpsz_sf <- st_read(dsn = "data/MP14_SUBZONE_WEB_PL", layer = "MP14_SUBZONE_WEB_PL")
-
-#st_crs(mpsz_sf)
+rental_sf <- read_rds("data/rds/rental_sf.rds")
 ```
 
-```{r}
-rental_sf <- read_rds("data/rental_sf.rds")
-```
+Primarily, we will be working with numerical values to determine the variable correlations they have with `monthly_rent`. Based on the summary results below, we will first focus on the following columns:
+
+1\. **no_of_kindergarten_500m**
+
+2\. **prox_kindergarten**
+
+3\. **no_of_childcare_500m**
+
+4\. **prox_childcare**
+
+5\. **no_of_hawker_500m**
+
+6\. **prox_hawker**
+
+7\. **no_of_busstop_500m**
+
+8\. **prox_busstop**
+
+9\. **no_of_shoppingmall_1km**
+
+10\. **prox_shoppingmall**
+
+11\. **prox_mrt**
+
+12\. **prox_prisch**
+
+13\. **prox_cbd**
 
 ```{r}
 summary(rental_sf)
-glimpse(rental_sf)
 ```
 
-As we are more interested
+The entire data are split into training and test data sets with 65% and 35% respectively by using `initial_split()` of **rsample** package.
 
 ```{r}
 set.seed(1234)
@@ -49,9 +145,17 @@ rental_nogeo <- rental_sf %>%
   st_drop_geometry()
 ```
 
+As we are more interested in predicting rental prices of property based on different locations across Singpaore, we will start by examining the only numeric independent values of the `rental.sf` data frame
+
 ```{r}
 names(rental_nogeo)
 ```
+
+## 3.4 Computing Correlation Matrix
+
+Before loading the predictors into a predictive model, it is always a good practice to use correlation matrix to examine if there is sign of multicolinearity.
+
+The code chunk below is used to plot a scatterplot matrix of the relationship between the independent variables in `rental.sf` data.frame.
 
 ::: panel-tabset
 ## Order - AOE
@@ -115,7 +219,11 @@ corrplot::corrplot(cor(rental_nogeo),
 ```
 :::
 
-## Retriving the Stored Data
+After viewing the various correlation matrices above, all the correlation values are below 0.8. Hence, there is no sign of multicolinearity.
+
+## 3.5 Building a non-spatial multiple linear regression
+
+We will now go about building a non-spatial multi-linear regression. Given that `flat_type` is categorical and has been shown to significantly impact rental prices, it’s appropriate to retain it. Variables like `flat_type` have proven theoretical and empirical justification for their inclusion based on their substantial effect on monthly rental price.
 
 ```{r}
 train_data <- read_rds("data/rds/model/train_data.rds")
@@ -123,7 +231,10 @@ test_data <- read_rds("data/rds/model/test_data.rds")
 ```
 
 ```{r}
-price_mlr <- lm(monthly_rent ~ 
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-width: 12
+rental_price_mlr <- lm(monthly_rent ~ 
                   flat_type + no_of_kindergarten_500m + prox_kindergarten +
                   no_of_childcare_500m + no_of_hawker_500m + prox_childcare +
                   prox_hawker + no_of_busstop_500m + prox_busstop + 
@@ -132,32 +243,51 @@ price_mlr <- lm(monthly_rent ~
                   prox_cbd,
                 data=train_data)
 
-summary(price_mlr)
+summary(rental_price_mlr)
 ```
 
 Based on the coefficient section, we can see that not all the independent variables are statistically significant, and some variables can be removed from our model based on their p-value field (Pr \> 0.05).
 
-The following variables should be removed from the model due to their high p-values, indicating they are not statisitically significant predictors of monthly rent: **1. no_of_hawker_500m (p = 0.89609)** **2. prox_childcare (p = 0.69011)** **3. no_of_busstop_500m (p = 0.38677)** **4. prox_busstop (p = 0.37263)** **5. no_of_shoppingmall_1km (p = 0.56886)**
+The following variables should be removed from the model due to their high p-values, indicating they are not statisitically significant predictors of monthly rent:
 
-Now we will update the model
+**1. no_of_hawker_500m (p = 0.89609)**
+
+**2. prox_childcare (p = 0.69011)**
+
+**3. no_of_busstop_500m (p = 0.38677)**
+
+**4. prox_busstop (p = 0.37263)**
+
+**5. no_of_shoppingmall_1km (p = 0.56886)**
+
+Now we will update the model by removing the 5 variables
 
 ```{r}
-price_mlr <- lm(monthly_rent ~ 
-                  flat_type + no_of_kindergarten_500m + prox_kindergarten +
+rental_price_mlr <- lm(formula = monthly_rent ~ flat_type + no_of_kindergarten_500m + prox_kindergarten +
                   no_of_childcare_500m + prox_hawker + prox_shoppingmall +
-                  prox_mrt + prox_prisch + prox_cbd,
-                data=train_data)
+                  prox_mrt + prox_prisch + prox_cbd, 
+                 data = train_data)
 
-summary(price_mlr)
+# Display the publication-quality table
+ols_regress(rental_price_mlr)
 ```
 
-```{r}
-write_rds(price_mlr, "data/rds/model/price_mlr.rds")
-```
+::: {.callout-tip title="Interpretation"}
+1.  **Model Performance**:
+    -   The R-squared value is 0.314, indicating that about 31.4% of the variability in monthly rent is explained by the model. While it shows some predictive capability, other factors might still influence rental prices.
+2.  **Key Predictors**:
+    -   **Significant Variables**: The predictors with low p-values (e.g., flat type, number of kindergartens, proximity to hawker centers, shopping malls, MRT stations, primary schools, and CBD) significantly influence monthly rent.
+    -   **Noteworthy Coefficients**:
+        -   `flat_type`: Larger room types (4-ROOM, 5-ROOM) show substantial positive impacts on monthly rent.
+        -   `prox_cbd`: Rent decreases as distance from the CBD increases, with each unit increase in distance reducing the monthly rent by about 0.039.
+3.  **Model Error and Diagnostics**:
+    1.  **RMSE**: 547.5, suggesting a reasonable prediction accuracy
+    2.  **MAE**: 412.9, reflecting an average prediction error of about \$413
+:::
 
-```{r}
-price_mlr <- read_rds("data/rds/model/price_mlr.rds")
-```
+## 3.6 Constructing the adaptive bandwidth gwr model
+
+Now, we can go ahead to calibrate the gwr-based hedonic pricing model by using adaptive bandwidth and Gaussian kernel. First we use `bw.gwr()` of **GWmodel** package to determine the optimal bandwidth to be used
 
 ```{r}
 train_data_sp <- as_Spatial(train_data)
@@ -165,6 +295,9 @@ train_data_sp
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-width: 12
 bw_adaptive <- bw.gwr(monthly_rent ~ 
                   flat_type + no_of_kindergarten_500m + prox_kindergarten +
                   no_of_childcare_500m + prox_hawker + prox_shoppingmall +
@@ -195,7 +328,12 @@ After identifying the optimal adaptive bandwidth (`bw_adaptive`) for running a G
 
 In short, this step allows you to create a spatially-varying model, which helps identify how different factors contribute to `monthly_rent` differently across locations.
 
+Now we can to calibrate the gwr-based hedonic pricing model using adaptive bandwidth and gaussian kernel.
+
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-width: 12
 gwr_adaptive <- gwr.basic(formula = monthly_rent ~ 
                   flat_type + no_of_kindergarten_500m + prox_kindergarten +
                   no_of_childcare_500m + prox_hawker + prox_shoppingmall +
@@ -221,7 +359,8 @@ This code produces the GWR model using the adaptive bandwidth previously calcula
 gwr_adaptive
 ```
 
-{.callout-tip title="Insights"} This analysis captures how each variable's impact on rental prices varies across different spatial locations. Here’s a breakdown of the key results:
+::: {.callout-tip title="Insights"}
+This analysis captures how each variable's impact on rental prices varies across different spatial locations. Here’s a breakdown of the key results:
 
 ### 1. **Global Regression Results**
 
@@ -246,56 +385,14 @@ Significant variables (based on p-values \< 0.05) include: - **flat_type**: Diff
 -   **Residual Sum of Squares (RSS)**: Lower in GWR (4238886846 vs. 5009516507 in the global model), indicating better fit.
 -   **Adjusted R-squared**: 0.3987 for GWR, higher than the global model’s, suggesting improved explanatory power.
 
-The GWR model thus captures complex spatial heterogeneity in rental price determinants, which would be missed by a non-spatial global regression model. :::
-
-### Converting the test data from sf data.frame to SpatialPointDataFrame
-
-```{r}
-test_data_sp <- test_data %>%
-  as_Spatial()
-test_data_sp
-```
-
-### Computing adaptive bandwidth for the test data
-
-```{r}
-gwr_bw_test_adaptive <- bw.gwr(monthly_rent ~ 
-                  flat_type + no_of_kindergarten_500m + prox_kindergarten +
-                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
-                  prox_mrt + prox_prisch + prox_cbd,
-                  data=test_data_sp,
-                  approach="CV",
-                  kernel="gaussian",
-                  adaptive=TRUE,
-                  longlat=FALSE)
-```
-
-::: {.callout-tip title="Insight"}
-The bandwidth determines how many nearest neighbors are considered for each local regression, which impacts the model's ability to capture local variations effectively. Here’s a breakdown:
-
-1.  **Bandwidth Selection Process**:
-    -   The algorithm iteratively tests different bandwidths and computes a cross-validation (CV) score for each.
-    -   The CV score is a measure of the model's predictive error; a lower score indicates a better fit for that bandwidth.
-    -   As bandwidth decreases, the CV score generally decreases until it reaches an optimal point, after which it may increase or plateau.
-2.  **Optimal Bandwidth**:
-    -   Here, the optimal adaptive bandwidth is found to be **184** (based on the lowest CV score of **4484696643**).
-    -   This bandwidth indicates that for each local regression in the GWR model, the 184 nearest neighbors are included, providing a balance between capturing spatial variation and maintaining model stability.
-3.  **Interpretation**:
-    -   With an adaptive bandwidth of 184, the model is configured to adjust the neighborhood size according to the density of the data points. This is especially useful in spatial data where areas with different densities might require varying neighborhood sizes to accurately model local effects.
+The GWR model thus captures complex spatial heterogeneity in rental price determinants, which would be missed by a non-spatial global regression model.
 :::
 
-```{r}
-#| eval: false
-write_rds(gwr_bw_test_adaptive, "data/rds/model/gwr_bw_test_adaptive.rds")
-```
+## 3.7 Preparing coordinates data
 
-```{r}
-gwr_bw_test_adaptive <- read_rds("data/rds/model/gwr_bw_test_adaptive.rds")
-```
+### 3.7.1 Extracting coordinates data
 
-## Preparing coordinates data
-
-### Extracting coordinates data
+We will then retrieve `x` and `y` coordinates for all datasets (full, training, and test) using `st_coordinates()`, essential for spatial analysis and spatial modeling.
 
 The code chunk below extract the x,y coordinates of the full, training and test data sets.
 
@@ -304,8 +401,6 @@ coords <- st_coordinates(rental_sf)
 coords_train <- st_coordinates(train_data)
 coords_test <- st_coordinates(test_data)
 ```
-
-Before continue, we write all the output into rds for future used.
 
 ```{r}
 #| eval: false
@@ -319,9 +414,9 @@ coords_train <- read_rds("data/rds/model/coords_train.rds" )
 coords_test <- read_rds("data/rds/model/coords_test.rds" )
 ```
 
-### Droping geometry field
+### 3.7.2 Data Preparation
 
-First, we convert the Character Columns to Factors within both the `train_data` and `test_data`
+First, we convert the categorical data related columns to factors within both the `train_data` and `test_data`. This informs R that these are nominal categories, and they can be handled correctly in the model
 
 ```{r}
 train_data$flat_type <- as.factor(train_data$flat_type)
@@ -340,38 +435,71 @@ train_data <- train_data %>%
   st_drop_geometry()
 ```
 
-## Calibrating Random Forest Model
+## 3.8 Calibrating Models
 
-In this section, you will learn how to calibrate a model to predict HDB rental price by using random forest function of [**ranger**](https://cran.r-project.org/web/packages/ranger/index.html) package.
+In this section, we will calibrate a model to predict HDB rental price by using `grf()` of [**SpatialML**](https://cran.r-project.org/web/packages/ranger/index.html) package.
 
-```{r}
-set.seed(1234)
-rf <- ranger(monthly_rent ~ 
-                  flat_type + no_of_kindergarten_500m + prox_kindergarten +
-                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
-                  prox_mrt + prox_prisch + prox_cbd,
-             data=train_data)
-rf
-```
-
-```{r}
-write_rds(rf, "data/rds/model/rf.rds")
-```
-
-```{r}
-rf <- read_rds("data/rds/model/rf.rds")
-```
-
-## Calibrating Geographical Random Forest Model
-
-In this section, you will learn how to calibrate a model to predict HDB rental price by using `grf()` of [**SpatialML**](https://cran.r-project.org/web/packages/ranger/index.html) package.
-
-### Calibrating using training data
+### 3.8.1 Calibrating using training data
 
 Based on the output of the initial GWR model (gwr_adaptive), all of the features listed have p-values less than **0.05**, indicating that they are statistically significant. However, if you're looking for features that are less impactful, you can consider examining the magnitude of the coefficients alongside their p-values:
 
 1.  prox_kindergarten: Coefficient = -0.08478 (indicating a negative relationship, but relatively low impact)
 2.  prox_prisch: Coefficient = 0.03800 (also showing a weak relationship)
+
+### 3.8.2 Calibrating Random Forest (RF) Model
+
+In this section, we will calibrate a model to predict HDB rental price by using random forest function of [**ranger**](https://cran.r-project.org/web/packages/ranger/index.html) package.
+
+```{r}
+set.seed(1234)
+rf_cal <- ranger(monthly_rent ~ 
+                  flat_type + no_of_kindergarten_500m + 
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_cbd,
+             data=train_data)
+rf_cal
+```
+
+```{r eval=FALSE}
+#| eval: false
+write_rds(rf_cal, "data/rds/model/rf_cal.rds")
+```
+
+The code chunk below can be used to retrieve the save model in future.
+
+```{r}
+rf_cal <- read_rds("data/rds/model/rf_cal.rds")
+```
+
+### 3.8.3 Calibrating Random Forest (RF) Model with Tuned Hyperparameters
+
+In this section, we will calibrate a model to predict HDB rental price by using random forest function and utilizing the most important predictors to focus on those that have the strongest relationships with rental price. By recalibrating based on variable importance, this approach seeks to improve both prediction accuracy and model interpretability.
+
+```{r}
+set.seed(1234)
+rf_tuned <- ranger(monthly_rent ~ 
+                  flat_type + no_of_kindergarten_500m + 
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_cbd,
+             data=train_data,
+             importance = "permutation",
+             mtry = 3,
+             min.node.size=10)
+rf_tuned
+```
+
+```{r eval=FALSE}
+#| eval: false
+write_rds(rf_tuned, "data/rds/model/rf_tuned.rds")
+```
+
+The code chunk below can be used to retrieve the save model in future.
+
+```{r}
+rf_tuned <- read_rds("data/rds/model/rf_tuned.rds")
+```
+
+### 3.8.4 Calibrating Geographical Random Forest (GRF) Model
 
 The code chunk below calibrate a geographic random forest model by using `grf()` of **SpatialML** package.
 
@@ -403,9 +531,29 @@ The code chunk below can be used to retrieve the save model in future.
 gwRF_adaptive <- read_rds("data/rds/model/gwRF_adaptive.rds")
 ```
 
-### Predicting by using test data
+```{R}
+gwRF_adaptive
+```
 
-#### Preparing the test data
+::: {.callout-tip title="Notes"}
+Calibrating 3 random forest models would give the user more options in determining how their HDB rental prices are predicted
+:::
+
+```{r}
+write_rds(train_data, "data/rds/model/train_data_mod.rds")
+write_rds(test_data, "data/rds/model/test_data_mod.rds")
+```
+
+```{r}
+train_data <- read_rds("data/rds/model/train_data_mod.rds")
+test_data <- read_rds("data/rds/model/test_data_mod.rds")
+```
+
+## 3.9 Predicting by using test data
+
+### 3.9.1 Preparing the test data
+
+To prepare the test data for prediction, the test data is combined with the coordinates, and unnecessary geometry information is removed to streamline the dataset for the model.
 
 The code chunk below will be used to combine the test data with its corresponding coordinates data.
 
@@ -414,6 +562,8 @@ The code chunk below will be used to combine the test data with its correspondin
 test_data <- cbind(test_data, coords_test) %>%
   st_drop_geometry()
 ```
+
+Next, we verify that the test data contains all required variables:
 
 ```{r}
 # Define the required variables
@@ -432,7 +582,18 @@ if (length(missing_vars) > 0) {
 test_data_subset <- test_data[, required_vars, drop = FALSE]
 ```
 
-#### Predicting with test data
+### 3.9.2 Predicting with test data
+
+Using the trained Random Forest models, rf_cal and rf_tuned, we proceed with rental value predictions on the test data.
+
+```{r}
+rf_pred_cal <- predict(rf_cal, data = test_data_subset)
+rf_pred_tuned <- predict(rf_tuned, data = test_data_subset)
+```
+
+```{r}
+typeof(test_data_subset)
+```
 
 Next, `predict.grf()` of spatialML package will be used to predict the rental value by using the test data and gwRF_adaptive model calibrated earlier.
 
@@ -446,68 +607,164 @@ gwRF_pred <- predict.grf(gwRF_adaptive,
                            global.w=0)
 ```
 
-Before moving on, let us save the output into rds file for future use.
+Before moving on, let us save the output into rds files for future use.
 
 ```{r}
+write_rds(rf_pred_cal, "data/rds/model/rf_pred_cal.rds")
+write_rds(rf_pred_tuned, "data/rds/model/rf_pred_tuned.rds")
 write_rds(gwRF_pred, "data/rds/model/GRF_pred.rds")
 ```
 
-#### Converting the predicting output into a data frame
+### 3.9.3 Formatting Prediction Outputs
 
-The output of the `predict.grf()` is a vector of predicted values. It is wiser to convert it into a data frame for further visualisation and analysis.
+The output of the `predict()` and `predict.grf()` is a vector of predicted values. We will convert it into a data frame for further visualisation and analysis.
 
 ```{r}
+rf_pred_cal <- read_rds("data/rds/model/rf_pred_cal.rds")
+rf_pred_tuned <- read_rds("data/rds/model/rf_pred_tuned.rds")
 gwRF_pred <- read_rds("data/rds/model/GRF_pred.rds")
 ```
 
 ```{r}
+rf_pred_cal <- as.data.frame(rf_pred_cal)
+rf_pred_tuned <- as.data.frame(rf_pred_tuned)
 GRF_pred_df <- as.data.frame(gwRF_pred)
 ```
 
-In the code chunk below, `cbind()` is used to append the predicted values onto test_data
+In the code chunk below, `cbind()` is used to append the predicted values onto test_data.
 
 ```{r}
-test_data_p <- cbind(test_data, GRF_pred_df)
+test_data_rpc <- cbind(test_data, rf_pred_cal)
+test_data_rpt <- cbind(test_data, rf_pred_tuned)
+test_data_gp <- cbind(test_data, GRF_pred_df)
 ```
 
 ```{r}
-write_rds(test_data_p, "data/rds/model/test_data_p.rds")
+write_rds(test_data_rpc, "data/rds/model/test_data_rpc.rds")
+write_rds(test_data_rpt, "data/rds/model/test_data_rpt.rds")
+write_rds(test_data_gp, "data/rds/model/test_data_gp.rds")
 ```
 
-### Calculating Root Mean Square Error
+### 3.9.4 Evaluating Model Accuracy with RMSE and MAE
 
-The root mean square error (RMSE) allows us to measure how far predicted values are from observed values in a regression analysis. In the code chunk below, rmse() of Metrics package is used to compute the RMSE.
+The Root Mean Square Error (RMSE) and Mean Absolute Error (MAE) are used to assess the accuracy of the predictions by comparing the predicted values with the actual monthly rent.
+
+#### 3.9.4.1 Accuracy of Random Forest (RF) Model
 
 ```{r}
-rmse(test_data_p$monthly_rent, 
-     test_data_p$gwRF_pred)
+rmse(test_data_rpc$monthly_rent, 
+     test_data_rpc$prediction)
 ```
 
 ```{r}
-mae(test_data_p$monthly_rent, 
-     test_data_p$gwRF_pred)
+mae(test_data_rpc$monthly_rent, 
+     test_data_rpc$prediction)
 ```
 
-### Visualising the predicted values
+#### 3.9.4.2 Accuracy of Random Forest (RF) Model with Tuned Hyperparameters
 
-Alternatively, scatterplot can be used to visualise the actual rental price and the predicted rental price by using the code chunk below.
+```{r}
+rmse(test_data_rpt$monthly_rent, 
+     test_data_rpt$prediction)
+```
+
+```{r}
+mae(test_data_rpt$monthly_rent, 
+     test_data_rpt$prediction)
+```
+
+#### 3.9.4.3 Accuracy of Geographical Random Forest (GRF) Model
+
+```{r}
+rmse(test_data_gp$monthly_rent, 
+     test_data_gp$gwRF_pred)
+```
+
+```{r}
+mae(test_data_gp$monthly_rent, 
+     test_data_gp$gwRF_pred)
+```
+
+### 3.9.5 Visualising the predicted values
+
+To better visually assess model performance and make better comparisons between the models, scatterplots display the relationship between predicted and actual values. A well-performing model will show points clustering along the diagonal, indicating strong alignment between predictions and observations.
+
+#### 3.9.5.1 Random Forest (RF) Model
 
 ```{r}
 # Step 1: Identify and print duplicate column names
-duplicate_columns <- names(test_data_p)[duplicated(names(test_data_p))]
+duplicate_columns <- names(test_data_rpc)[duplicated(names(test_data_rpc))]
 print(duplicate_columns)
 
 # Step 2: Remove duplicate columns (if any exist)
-test_data_p <- test_data_p[, !duplicated(names(test_data_p))]
+test_data_rpc <- test_data_rpc[, !duplicated(names(test_data_rpc))]
 
 # Step 3: Plot with ggplot2
-ggplot(data = test_data_p, aes(x = gwRF_pred, y = monthly_rent)) +
+ggplot(data = test_data_rpc, aes(x = prediction, y = monthly_rent)) +
   geom_point() +
   labs(x = "Predicted Rent", y = "Actual Monthly Rent", title = "Predicted vs Actual Monthly Rent")
 ```
 
 ```{r}
-ggplot(data = test_data_p, aes(x = gwRF_pred, y = monthly_rent)) +
+ggplot(data = test_data_rpc, aes(x = prediction, y = monthly_rent)) +
+  geom_point(alpha = 0.6, color = "blue") +  # Adjust point transparency and color
+  geom_smooth(method = "lm", se = TRUE, color = "red", linetype = "dashed") +  # Best fit line
+  labs(title = "Predicted Monthly Rent vs. Geographically Weighted RF Predictions",
+       x = "Geographically Weighted RF Predictions",
+       y = "Monthly Rent")
+  theme_minimal() + 
+  theme(plot.title = element_text(hjust = 0.5),  # Center the title
+        axis.title = element_text(size = 12),  # Increase axis title size
+        axis.text = element_text(size = 10))   # Increase axis text size
+```
+
+#### 3.9.5.2 Random Forest (RF) Model with Tuned Hyperparameters
+
+```{r}
+# Step 1: Identify and print duplicate column names
+duplicate_columns <- names(test_data_rpt)[duplicated(names(test_data_rpt))]
+print(duplicate_columns)
+
+# Step 2: Remove duplicate columns (if any exist)
+test_data_rpt <- test_data_rpt[, !duplicated(names(test_data_rpt))]
+
+# Step 3: Plot with ggplot2
+ggplot(data = test_data_rpc, aes(x = prediction, y = monthly_rent)) +
+  geom_point() +
+  labs(x = "Predicted Rent", y = "Actual Monthly Rent", title = "Predicted vs Actual Monthly Rent")
+```
+
+```{r}
+ggplot(data = test_data_rpt, aes(x = prediction, y = monthly_rent)) +
+  geom_point(alpha = 0.6, color = "blue") +  # Adjust point transparency and color
+  geom_smooth(method = "lm", se = TRUE, color = "red", linetype = "dashed") +  # Best fit line
+  labs(title = "Predicted Monthly Rent vs. Geographically Weighted RF Predictions",
+       x = "Geographically Weighted RF Predictions",
+       y = "Monthly Rent")
+  theme_minimal() + 
+  theme(plot.title = element_text(hjust = 0.5),  # Center the title
+        axis.title = element_text(size = 12),  # Increase axis title size
+        axis.text = element_text(size = 10))   # Increase axis text size
+```
+
+#### 3.9.5.3 Geographical Random Forest (GRF) Model
+
+```{r}
+# Step 1: Identify and print duplicate column names
+duplicate_columns <- names(test_data_gp)[duplicated(names(test_data_gp))]
+print(duplicate_columns)
+
+# Step 2: Remove duplicate columns (if any exist)
+test_data_gp <- test_data_gp[, !duplicated(names(test_data_gp))]
+
+# Step 3: Plot with ggplot2
+ggplot(data = test_data_gp, aes(x = gwRF_pred, y = monthly_rent)) +
+  geom_point() +
+  labs(x = "Predicted Rent", y = "Actual Monthly Rent", title = "Predicted vs Actual Monthly Rent")
+```
+
+```{r}
+ggplot(data = test_data_gp, aes(x = gwRF_pred, y = monthly_rent)) +
   geom_point(alpha = 0.6, color = "blue") +  # Adjust point transparency and color
   geom_smooth(method = "lm", se = TRUE, color = "red", linetype = "dashed") +  # Best fit line
   labs(title = "Predicted Monthly Rent vs. Geographically Weighted RF Predictions",
@@ -520,56 +777,43 @@ ggplot(data = test_data_p, aes(x = gwRF_pred, y = monthly_rent)) +
 ```
 
 ::: {.callout-tip title="Notes"}
-A better predictive model should have the scatter point close to the diagonal line. The scatter plot can be also used to detect if any outliers in the model.
+With the different predictive models, users can choose the model that best fits their specific needs, depending on their requirements for accuracy, interpretability, or spatial relevance. Each model provides distinct benefits:
+
+1.  **Standard Random Forest (RF)**: Offers a straightforward approach, balancing interpretability and predictive power with little calibration. It's useful for users looking for a quick and reliable model without the need for significant adjustments.
+
+2.  **Tuned Random Forest (RF with Tuned Hyperparameters)**: By focusing on the most impactful predictors and fine-tuning parameters like `mtry` and `min.node.size`, this model aims to achieve higher prediction accuracy. This is ideal for users who want an optimized model for maximum performance.
+
+3.  **Geographic Random Forest (GRF)**: The geographically weighted RF model accounts for spatial differences in predictor effects, making it ideal for predictions where location plays a critical role, such as real estate or environmental modeling. Users interested in localized predictions would find this model particularly beneficial.
 :::
 
-### Fine-Tuning Model Parameters
+### 3.9.6 Summary and Practical Application
 
-```{r}
-# Try different bandwidth values
-bandwidths <- c(30, 50, 70, 90, 110)
-results <- list()
+Each calibrated model provides a different lens through which HDB rental prices can be understood and predicted. For practical application:
 
-for (bw in bandwidths) {
-  set.seed(1234)
-  gwRF_model <- grf(formula = monthly_rent ~ 
-                    flat_type + no_of_kindergarten_500m + 
-                    no_of_childcare_500m + prox_hawker + 
-                    prox_shoppingmall + prox_mrt + prox_cbd,
-                    dframe=train_data, 
-                    bw=bw,                   
-                    kernel="adaptive",
-                    ntree=350,
-                    coords=coords_train,
-                    min.node.size=10)
-  
-  # Predict using the training data or a validation set
-  pred <- predict.grf(gwRF_model, test_data_subset, 
-                       x.var.name="X", y.var.name="Y", 
-                       local.w=1, global.w=0)
-  
-  # Calculate RMSE or other metrics
-  rmse_value <- rmse(test_data$monthly_rent, pred)
-  results[[as.character(bw)]] <- rmse_value
-}
+-   **For general insights**, the Standard RF model may suffice.
+-   **For users seeking finer accuracy** in specific feature relationships, the Tuned RF model provides a refined approach.
+-   **For users interested in spatial variation**, the GRF model offers insights into how geographical context influences rent, making it highly applicable to real estate forecasting.
 
-# Compare results
-print(results)
-```
+### 3.9.7 UI Design
 
-```{r}
-library(spgwr) # For GWR
-set.seed(123)  # For reproducibility
-sample_size <- 5000  # Choose a reasonable sample size
-train_data_sample <- train_data[sample(1:nrow(train_data), sample_size), ]
-coords_sample <- coords_train[sample(1:nrow(coords_train), sample_size), ]
+#### 3.9.7.1 Scatterplot Model Analysis
 
+Users would be able to explore the scatterplot model analysis of the various models. This setup allows users to visualise the comparison of RF models directly within the main panel and reference selection guidance. Only one plot is shown at a time, based on their selection, so as to not overwhelm them.
 
-gwr_model <- gwr(monthly_rent ~ flat_type + no_of_kindergarten_500m + 
-                  no_of_childcare_500m + prox_hawker + 
-                  prox_shoppingmall + prox_mrt + prox_cbd, 
-                  data=train_data_sample, coords=coords_sample, bandwidth=70)
+![](images/clipboard-1541024995.png)
 
-# Summary of the GWR model
-summary(gwr_model)
-```
+#### 3.9.7.2 Predictive Models
+
+The guide section provides users with step-by-step instructions on how to navigate the UI, making the interface more intuitive.
+
+The side panel (and the Map section for Geospatial model types) would simulate the functions of a calculator, where users would be able to input certain aspects of the their ideal HDB rental location to determine a likely monthly rental cost. Together this would provide users with a clearer understanding of how to interact with the tool and a polished output section for viewing predictions
+
+This approach aims to provide a dynamic and intuitive way to input model parameters and view rental price predictions for different HDB flats in Singapore.
+
+#### Aspatial Model Type
+
+![](images/clipboard-1190366593.png)
+
+#### Geospatial Model Type
+
+![](images/clipboard-173143110.png)
