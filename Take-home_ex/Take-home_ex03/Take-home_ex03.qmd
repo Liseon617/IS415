@@ -21,7 +21,6 @@ execute:
   eval: true
   echo: true
   warning: false
-  freeze: true
   cache.lazy: true
 ---
 
@@ -157,9 +156,6 @@ Before loading the predictors into a predictive model, it is always a good pract
 
 The code chunk below is used to plot a scatterplot matrix of the relationship between the independent variables in `rental.sf` data.frame.
 
-::: panel-tabset
-## Order - AOE
-
 ```{r, fig.height=12,fig.width=12}
 corrplot::corrplot(cor(rental_nogeo), 
                    diag = FALSE, 
@@ -170,54 +166,6 @@ corrplot::corrplot(cor(rental_nogeo),
                    type = "upper")
 ```
 
-## Order - FPC
-
-```{r, fig.height=12,fig.width=12}
-corrplot::corrplot(cor(rental_nogeo), 
-                   diag = FALSE, 
-                   order = "FPC",
-                   tl.pos = "td", 
-                   tl.cex = 0.5, 
-                   method = "number", 
-                   type = "upper")
-```
-
-## Type - Lower
-
-```{r, fig.height=12,fig.width=12}
-corrplot::corrplot(cor(rental_nogeo), 
-                   diag = FALSE, 
-                   order = "AOE",
-                   tl.pos = "ld", 
-                   tl.cex = 0.5, 
-                   method = "number", 
-                   type = "lower")
-```
-
-## Type - Full
-
-```{r, fig.height=12,fig.width=12}
-corrplot::corrplot(cor(rental_nogeo), 
-                   diag = FALSE, 
-                   order = "AOE",
-                   tl.pos = "full", 
-                   tl.cex = 0.5, 
-                   method = "number", 
-                   type = "full")
-```
-
-## Method - Circle
-
-```{r, fig.height=12,fig.width=12}
-corrplot::corrplot(cor(rental_nogeo), 
-                   diag = FALSE, 
-                   order = "AOE",
-                   tl.pos = "td", 
-                   tl.cex = 0.5, 
-                   method = "circle", 
-                   type = "upper")
-```
-:::
 
 After viewing the various correlation matrices above, all the correlation values are below 0.8. Hence, there is no sign of multicolinearity.
 
@@ -263,6 +211,9 @@ The following variables should be removed from the model due to their high p-val
 Now we will update the model by removing the 5 variables
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-width: 12
 rental_price_mlr <- lm(formula = monthly_rent ~ flat_type + no_of_kindergarten_500m + prox_kindergarten +
                   no_of_childcare_500m + prox_hawker + prox_shoppingmall +
                   prox_mrt + prox_prisch + prox_cbd, 
@@ -409,7 +360,6 @@ coords_test <- write_rds(coords_test, "data/rds/model/coords_test.rds" )
 ```
 
 ```{r}
-#| eval: false
 coords_train <- read_rds("data/rds/model/coords_train.rds" )
 coords_test <- read_rds("data/rds/model/coords_test.rds" )
 ```
@@ -451,6 +401,7 @@ Based on the output of the initial GWR model (gwr_adaptive), all of the features
 In this section, we will calibrate a model to predict HDB rental price by using random forest function of [**ranger**](https://cran.r-project.org/web/packages/ranger/index.html) package.
 
 ```{r}
+#| eval: false
 set.seed(1234)
 rf_cal <- ranger(monthly_rent ~ 
                   flat_type + no_of_kindergarten_500m + 
@@ -476,6 +427,7 @@ rf_cal <- read_rds("data/rds/model/rf_cal.rds")
 In this section, we will calibrate a model to predict HDB rental price by using random forest function and utilizing the most important predictors to focus on those that have the strongest relationships with rental price. By recalibrating based on variable importance, this approach seeks to improve both prediction accuracy and model interpretability.
 
 ```{r}
+#| eval: false
 set.seed(1234)
 rf_tuned <- ranger(monthly_rent ~ 
                   flat_type + no_of_kindergarten_500m + 
@@ -610,6 +562,7 @@ gwRF_pred <- predict.grf(gwRF_adaptive,
 Before moving on, let us save the output into rds files for future use.
 
 ```{r}
+#| eval: false
 write_rds(rf_pred_cal, "data/rds/model/rf_pred_cal.rds")
 write_rds(rf_pred_tuned, "data/rds/model/rf_pred_tuned.rds")
 write_rds(gwRF_pred, "data/rds/model/GRF_pred.rds")
@@ -640,6 +593,7 @@ test_data_gp <- cbind(test_data, GRF_pred_df)
 ```
 
 ```{r}
+#| eval: false
 write_rds(test_data_rpc, "data/rds/model/test_data_rpc.rds")
 write_rds(test_data_rpt, "data/rds/model/test_data_rpt.rds")
 write_rds(test_data_gp, "data/rds/model/test_data_gp.rds")
@@ -689,20 +643,17 @@ mae(test_data_gp$monthly_rent,
 
 To better visually assess model performance and make better comparisons between the models, scatterplots display the relationship between predicted and actual values. A well-performing model will show points clustering along the diagonal, indicating strong alignment between predictions and observations.
 
+Prior to creating the plots, we would first identify and remove duplicate columns (if any exist).
+
 #### 3.9.5.1 Random Forest (RF) Model
 
 ```{r}
-# Step 1: Identify and print duplicate column names
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-width: 12
+
 duplicate_columns <- names(test_data_rpc)[duplicated(names(test_data_rpc))]
-print(duplicate_columns)
-
-# Step 2: Remove duplicate columns (if any exist)
 test_data_rpc <- test_data_rpc[, !duplicated(names(test_data_rpc))]
-
-# Step 3: Plot with ggplot2
-ggplot(data = test_data_rpc, aes(x = prediction, y = monthly_rent)) +
-  geom_point() +
-  labs(x = "Predicted Rent", y = "Actual Monthly Rent", title = "Predicted vs Actual Monthly Rent")
 ```
 
 ```{r}
@@ -721,17 +672,12 @@ ggplot(data = test_data_rpc, aes(x = prediction, y = monthly_rent)) +
 #### 3.9.5.2 Random Forest (RF) Model with Tuned Hyperparameters
 
 ```{r}
-# Step 1: Identify and print duplicate column names
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-width: 12
+
 duplicate_columns <- names(test_data_rpt)[duplicated(names(test_data_rpt))]
-print(duplicate_columns)
-
-# Step 2: Remove duplicate columns (if any exist)
 test_data_rpt <- test_data_rpt[, !duplicated(names(test_data_rpt))]
-
-# Step 3: Plot with ggplot2
-ggplot(data = test_data_rpc, aes(x = prediction, y = monthly_rent)) +
-  geom_point() +
-  labs(x = "Predicted Rent", y = "Actual Monthly Rent", title = "Predicted vs Actual Monthly Rent")
 ```
 
 ```{r}
@@ -750,17 +696,12 @@ ggplot(data = test_data_rpt, aes(x = prediction, y = monthly_rent)) +
 #### 3.9.5.3 Geographical Random Forest (GRF) Model
 
 ```{r}
-# Step 1: Identify and print duplicate column names
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-width: 12
+
 duplicate_columns <- names(test_data_gp)[duplicated(names(test_data_gp))]
-print(duplicate_columns)
-
-# Step 2: Remove duplicate columns (if any exist)
 test_data_gp <- test_data_gp[, !duplicated(names(test_data_gp))]
-
-# Step 3: Plot with ggplot2
-ggplot(data = test_data_gp, aes(x = gwRF_pred, y = monthly_rent)) +
-  geom_point() +
-  labs(x = "Predicted Rent", y = "Actual Monthly Rent", title = "Predicted vs Actual Monthly Rent")
 ```
 
 ```{r}
