@@ -1,5 +1,5 @@
 ---
-title: "Take-home Exercise 2: Application of Geospatial Analysis Methods to Discover Thailand Drug Abuse at the Province Levelr"
+title: "Take-home Exercise 2: Application of Geospatial Analysis Methods to Discover Thailand Drug Abuse at the Province Level"
 author: "Brian Lim"
 date: "September 8, 2024"
 date-modified: "last-modified"
