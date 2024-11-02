@@ -1,5 +1,5 @@
 ---
-title: "Take-home Exercise 1: Geospatial Analytics for Social Good: Application of Spatial and Spatio-temporal Point Patterns Analysis to discover the geographical distribution of Armed Conflict in Myanmar"
+title: "Take-home Exercise 2: Application of Geospatial Analysis Methods to Discover Thailand Drug Abuse at the Province Levelr"
 author: "Brian Lim"
 date: "September 8, 2024"
 date-modified: "last-modified"
