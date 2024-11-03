@@ -21,6 +21,7 @@ execute:
   eval: true
   echo: true
   warning: false
+  freeze: true
   cache.lazy: true
 ---
 
@@ -129,6 +130,7 @@ test_data <- testing(rental_split)
 ```
 
 ```{r}
+#| eval: false
 write_rds(train_data, "data/rds/model/train_data.rds")
 write_rds(test_data, "data/rds/model/test_data.rds")
 ```
@@ -246,6 +248,7 @@ train_data_sp
 ```
 
 ```{r}
+#| eval: false
 #| code-fold: true
 #| code-summary: "Show the code"
 #| fig-width: 12
@@ -261,11 +264,13 @@ bw_adaptive <- bw.gwr(monthly_rent ~
 ```
 
 ```{r}
+#| eval: false
 write_rds(bw_adaptive, "data/rds/model/bw_adaptive.rds")
 ```
 
 ```{r}
 bw_adaptive <- read_rds("data/rds/model/bw_adaptive.rds")
+bw_adaptive
 ```
 
 ::: {.callout-tip title="Inisghts"}
@@ -282,6 +287,7 @@ In short, this step allows you to create a spatially-varying model, which helps 
 Now we can to calibrate the gwr-based hedonic pricing model using adaptive bandwidth and gaussian kernel.
 
 ```{r}
+#| eval: false
 #| code-fold: true
 #| code-summary: "Show the code"
 #| fig-width: 12
@@ -297,6 +303,7 @@ gwr_adaptive <- gwr.basic(formula = monthly_rent ~
 ```
 
 ```{r}
+#| eval: false
 write_rds(gwr_adaptive, "data/rds/model/gwr_adaptive.rds")
 ```
 
@@ -480,10 +487,12 @@ write_rds(gwRF_adaptive, "data/rds/model/gwRF_adaptive.rds")
 The code chunk below can be used to retrieve the save model in future.
 
 ```{r}
+#| eval: false
 gwRF_adaptive <- read_rds("data/rds/model/gwRF_adaptive.rds")
 ```
 
 ```{R}
+#| eval: false
 gwRF_adaptive
 ```
 
@@ -492,6 +501,7 @@ Calibrating 3 random forest models would give the user more options in determini
 :::
 
 ```{r}
+#| eval: false
 write_rds(train_data, "data/rds/model/train_data_mod.rds")
 write_rds(test_data, "data/rds/model/test_data_mod.rds")
 ```
@@ -543,10 +553,6 @@ rf_pred_cal <- predict(rf_cal, data = test_data_subset)
 rf_pred_tuned <- predict(rf_tuned, data = test_data_subset)
 ```
 
-```{r}
-typeof(test_data_subset)
-```
-
 Next, `predict.grf()` of spatialML package will be used to predict the rental value by using the test data and gwRF_adaptive model calibrated earlier.
 
 ```{r}
@@ -573,12 +579,14 @@ write_rds(gwRF_pred, "data/rds/model/GRF_pred.rds")
 The output of the `predict()` and `predict.grf()` is a vector of predicted values. We will convert it into a data frame for further visualisation and analysis.
 
 ```{r}
+#| eval: false
 rf_pred_cal <- read_rds("data/rds/model/rf_pred_cal.rds")
 rf_pred_tuned <- read_rds("data/rds/model/rf_pred_tuned.rds")
 gwRF_pred <- read_rds("data/rds/model/GRF_pred.rds")
 ```
 
 ```{r}
+#| eval: false
 rf_pred_cal <- as.data.frame(rf_pred_cal)
 rf_pred_tuned <- as.data.frame(rf_pred_tuned)
 GRF_pred_df <- as.data.frame(gwRF_pred)
@@ -587,6 +595,7 @@ GRF_pred_df <- as.data.frame(gwRF_pred)
 In the code chunk below, `cbind()` is used to append the predicted values onto test_data.
 
 ```{r}
+#| eval: false
 test_data_rpc <- cbind(test_data, rf_pred_cal)
 test_data_rpt <- cbind(test_data, rf_pred_tuned)
 test_data_gp <- cbind(test_data, GRF_pred_df)
@@ -597,6 +606,12 @@ test_data_gp <- cbind(test_data, GRF_pred_df)
 write_rds(test_data_rpc, "data/rds/model/test_data_rpc.rds")
 write_rds(test_data_rpt, "data/rds/model/test_data_rpt.rds")
 write_rds(test_data_gp, "data/rds/model/test_data_gp.rds")
+```
+
+```{r}
+test_data_rpc <- read_rds("data/rds/model/test_data_rpc.rds")
+test_data_rpt <- read_rds("data/rds/model/test_data_rpt.rds")
+test_data_gp <- read_rds("data/rds/model/test_data_gp.rds")
 ```
 
 ### 3.9.4 Evaluating Model Accuracy with RMSE and MAE
