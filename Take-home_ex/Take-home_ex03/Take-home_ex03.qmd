@@ -49,7 +49,7 @@ For this exercise, the following R packages will be used:
 
 -   [**Metrics**](https://cran.r-project.org/web/packages/Metrics) implements metrics for regression, time series, binary classification, classification, and information retrieval problems.
 
--   ["olsrr"](https://www.rdocumentation.org/packages/olsrr/versions/0.6.0) provides tools for building OLS regression models using R
+-   [**olsrr**](https://www.rdocumentation.org/packages/olsrr/versions/0.6.0) provides tools for building OLS regression models using R
 
 As readr, tidyr and dplyr are part of tidyverse package. The code chunk below will suffice to install and load the required packages in RStudio.
 
