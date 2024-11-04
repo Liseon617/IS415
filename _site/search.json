@@ -1146,5 +1146,47 @@
     "title": "Take-home Exercise 2: Application of Geospatial Analysis Methods to Discover Thailand Drug Abuse at the Province Level",
     "section": "2.9 Conclusion",
     "text": "2.9 Conclusion\nThe spatial analysis of drug-related cases in Thailand from 2017 to 2022, using Local Getis-Ord Gi and Local Indicator of Spatial Association (LISA), reveals distinct regional patterns that indicate both persistent hotspots and coldspots across different years. The northeastern region consistently exhibits High-High clusters, particularly in border provinces, suggesting an ongoing concentration of drug-related issues in those areas, highlighting them as persistent hotspots. These regions demand focused interventions to curb drug-related activities.\nConversely, the central and western regions show a contrasting trend with Low-Low clusters, signifying areas with stable, low drug-use rates, referred to as coldspots. The continued presence of these clusters across multiple years suggests the effectiveness of existing measures in maintaining lower levels of drug-related incidents in these regions. The spillover effects between neighboring regions, such as the emergence of Low-High and High-Low clusters, reflect transitional areas where drug-use trends might be shifting, requiring proactive monitoring and intervention strategies.\nOverall, the combination of High-High and Low-Low clusters over the years demonstrates the evolving drug-use landscape in Thailand, necessitating a tailored approach to addressing both the hotspots and coldspots identified by spatial autocorrelation techniques like LISA and Local Getis-Ord Gi.\n\n\n\n\n\n\nKey Recommendations\n\n\n\nTo effectively address the evolving landscape of drug use in Thailand, the authorities should adopt a data-driven, region-specific approach based on the spatial patterns observed in drug-related incidents from 2017 to 2022. Here are some key recommendations:\n\nFocus on Persistent Hotspots: The northeastern region, particularly along the border provinces, consistently shows High-High clusters, indicating areas with a high concentration of drug-related cases. Thai authorities should prioritize these areas by intensifying law enforcement efforts, increasing surveillance, and providing targeted interventions. Coordinated cross-border efforts with neighboring countries might also help reduce the flow of drugs in these regions.\nStrengthen Monitoring in Transitional Areas: The presence of High-Low and Low-High clusters in both the northeastern and central regions indicates areas where drug use trends may be shifting. Thai authorities should closely monitor these transitional areas to prevent the potential spillover of drug-related activities from high-incident to low-incident regions. Early intervention in these areas can help prevent further escalation of drug use.\nSustain Coldspots with Preventive Measures: In regions such as the central and western areas where Low-Low clusters are observed, authorities should continue supporting community-based preventive programs, education campaigns, and rehabilitation services. These measures have likely contributed to maintaining low levels of drug-related cases, and ensuring their sustainability will help preserve these coldspots."
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex12.html",
+    "href": "In-class_Ex/In-class_Ex12.html",
+    "title": "In Class exercise 12",
+    "section": "",
+    "text": "pacman::p_load(tidyverse, sf, tmap, httr, performance)\n\nThe code chunk below imports multiple csv files in a specified folder and append them into a single tibble data frame.\n\nfolder_path &lt;- \"data/In-class_Ex12/aspatial\"\nfile_list &lt;- list.files(path = folder_path, \n                        pattern = \"^realis.*\\\\.csv$\", \n                        full.names = TRUE)\n\nrealis_data &lt;- file_list %&gt;%\n  map_dfr(read_csv)\n\nThe following code chunk converts values in Sale Date field from character to numerical date format, and - extracting resale and condominium transaction records.\n\ncondo_resale &lt;- realis_data %&gt;%\n  mutate(`Sale Date` = dmy(`Sale Date`)) %&gt;%\n  filter(`Type of Sale` == \"Resale\" &\n           `Property Type` == \"Condominium\")"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex12.html#loading-the-r-packages",
+    "href": "In-class_Ex/In-class_Ex12.html#loading-the-r-packages",
+    "title": "In Class exercise 12",
+    "section": "",
+    "text": "pacman::p_load(tidyverse, sf, tmap, httr, performance)\n\nThe code chunk below imports multiple csv files in a specified folder and append them into a single tibble data frame.\n\nfolder_path &lt;- \"data/In-class_Ex12/aspatial\"\nfile_list &lt;- list.files(path = folder_path, \n                        pattern = \"^realis.*\\\\.csv$\", \n                        full.names = TRUE)\n\nrealis_data &lt;- file_list %&gt;%\n  map_dfr(read_csv)\n\nThe following code chunk converts values in Sale Date field from character to numerical date format, and - extracting resale and condominium transaction records.\n\ncondo_resale &lt;- realis_data %&gt;%\n  mutate(`Sale Date` = dmy(`Sale Date`)) %&gt;%\n  filter(`Type of Sale` == \"Resale\" &\n           `Property Type` == \"Condominium\")"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex12.html#data-preparation",
+    "href": "In-class_Ex/In-class_Ex12.html#data-preparation",
+    "title": "In Class exercise 12",
+    "section": "Data preparation",
+    "text": "Data preparation\n\npostcode &lt;- unique(condo_resale$`Postal Code`)\n\n\nurl &lt;- \"https://onemap.gov.sg/api/common/elastic/search\"\nfound &lt;- data.frame()\nnot_found &lt;- data.frame()\n\nfor (postcode in postcode){\n  query &lt;- list('searchVal'=postcode, 'returnGeom'='Y', \n                'getAddrDetails'='Y', 'pageNum'='1')\n  res &lt;- GET(url, query=query)\n  if ((content(res)$found)!=0){\n    found &lt;- rbind(found, data.frame(content(res))[4:13])\n  } else {not_found = data.frame(postcode)\n  }\n}"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex12.html#tidying-up-field-names",
+    "href": "In-class_Ex/In-class_Ex12.html#tidying-up-field-names",
+    "title": "In Class exercise 12",
+    "section": "Tidying up field names",
+    "text": "Tidying up field names\n\nfound &lt;- found %&gt;%\n  select(c(6:8)) %&gt;%\n  rename(POSTAL = `results.POSTAL`,\n         XCOORD = `results.X`,\n         YCOORD = `results.Y`)\n\n\nwrite_rds(found, \"data/In-class_Ex12/found.rds\")\n\n\nfound &lt;- read_rds(\"data/In-class_Ex12/found.rds\")\n\nThe following chunk of code is to join condo_resale and found\n\ncondo_resale_geocoded = left_join(\n  condo_resale, found, \n  by = c('Postal Code' = 'POSTAL'))\n\nThe following chunk of code is to convert condo_resale_geocoded from tibble data frame to sf point feature data frame\n\ncondo_resale_sf &lt;- st_as_sf(condo_resale_geocoded, \n                            coords = c(\"XCOORD\",\n                                       \"YCOORD\"),\n                            crs=3414)\n\n\nCleaning spatial data\nThe code chunk below is used to check if there are overlapping point features.\n\noverlapping_points &lt;- condo_resale_sf %&gt;%\n  mutate(overlap = lengths(st_equals(., .)) &gt; 1)\n\nIn the code code chunk below, st_jitter() of sf package is used to move the point features by 5m to avoid overlapping point features.\n\ncondo_resale_sf &lt;- condo_resale_sf %&gt;%\n  st_jitter(amount = 2)"
+  },
+  {
+    "objectID": "In-class_Ex/data/In-class_Ex04/Kepulauan_Bangka_Belitung.html",
+    "href": "In-class_Ex/data/In-class_Ex04/Kepulauan_Bangka_Belitung.html",
+    "title": "Brian’s IS415 Experience",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     \n\n\n       GEOGCRS[“WGS 84”,ENSEMBLE[“World Geodetic System 1984 ensemble”,MEMBER[“World Geodetic System 1984 (Transit)”],MEMBER[“World Geodetic System 1984 (G730)”],MEMBER[“World Geodetic System 1984 (G873)”],MEMBER[“World Geodetic System 1984 (G1150)”],MEMBER[“World Geodetic System 1984 (G1674)”],MEMBER[“World Geodetic System 1984 (G1762)”],MEMBER[“World Geodetic System 1984 (G2139)”],ELLIPSOID[“WGS 84”,6378137,298.257223563,LENGTHUNIT[“metre”,1]],ENSEMBLEACCURACY[2.0]],PRIMEM[“Greenwich”,0,ANGLEUNIT[“degree”,0.0174532925199433]],CS[ellipsoidal,2],AXIS[“geodetic latitude (Lat)”,north,ORDER[1],ANGLEUNIT[“degree”,0.0174532925199433]],AXIS[“geodetic longitude (Lon)”,east,ORDER[2],ANGLEUNIT[“degree”,0.0174532925199433]],USAGE[SCOPE[“Horizontal component of 3D system.”],AREA[“World.”],BBOX[-90,-180,90,180]],ID[“EPSG”,4326]] +proj=longlat +datum=WGS84 +no_defs 3452 4326 EPSG:4326 WGS 84 longlat EPSG:7030 true"
+  },
+  {
+    "objectID": "In-class_Ex/data/MasterPlan2019SubzoneBoundaryWebSHP/MPSZ-2019.html",
+    "href": "In-class_Ex/data/MasterPlan2019SubzoneBoundaryWebSHP/MPSZ-2019.html",
+    "title": "Brian’s IS415 Experience",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n        0 0     false"
   }
 ]

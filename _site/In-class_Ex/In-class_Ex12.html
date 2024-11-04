@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Brian Lim">
+<meta name="dcterms.date" content="2024-11-04">
 
-<title>Brian’s IS415 Experience - Welcome</title>
+<title>Brian’s IS415 Experience - In Class exercise 12</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,27 +22,59 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -68,67 +102,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
 
-    const options = {
-      valueNames: ['listing-title','listing-author','listing-date','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
-
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../styles.css">
 </head>
 
 <body class="nav-fixed">
@@ -138,7 +114,7 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Brian’s IS415 Experience</span>
     </a>
   </div>
@@ -154,35 +130,35 @@ window.Quarto = {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-exercise">    
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex01.html">
+    <a class="dropdown-item" href="../Hands-on_Ex/Hands-on_Ex01.html">
  <span class="dropdown-text">Hands-on Exercise 1</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex02.html">
+    <a class="dropdown-item" href="../Hands-on_Ex/Hands-on_Ex02.html">
  <span class="dropdown-text">Hands-on Exercise 2</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex03.html">
+    <a class="dropdown-item" href="../Hands-on_Ex/Hands-on_Ex03.html">
  <span class="dropdown-text">Hands-on Exercise 3</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex05.html">
+    <a class="dropdown-item" href="../Hands-on_Ex/Hands-on_Ex05.html">
  <span class="dropdown-text">Hands-on Exercise 5</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex06.html">
+    <a class="dropdown-item" href="../Hands-on_Ex/Hands-on_Ex06.html">
  <span class="dropdown-text">Hands-on Exercise 6</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex09.html">
+    <a class="dropdown-item" href="../Hands-on_Ex/Hands-on_Ex09.html">
  <span class="dropdown-text">Hands-on Exercise 9</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex10.html">
+    <a class="dropdown-item" href="../Hands-on_Ex/Hands-on_Ex10.html">
  <span class="dropdown-text">Hands-on Exercise 10</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex11.html">
+    <a class="dropdown-item" href="../Hands-on_Ex/Hands-on_Ex11.html">
  <span class="dropdown-text">Hands-on Exercise 11</span></a>
   </li>  
     </ul>
@@ -193,35 +169,35 @@ window.Quarto = {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-in-class-exercise">    
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex02.html">
+    <a class="dropdown-item" href="../In-class_Ex/In-class_Ex02.html">
  <span class="dropdown-text">In-class Exercise 2</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex03.html">
+    <a class="dropdown-item" href="../In-class_Ex/In-class_Ex03.html">
  <span class="dropdown-text">In-class Exercise 3</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex04.html">
+    <a class="dropdown-item" href="../In-class_Ex/In-class_Ex04.html">
  <span class="dropdown-text">In-class Exercise 4</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex05.html">
+    <a class="dropdown-item" href="../In-class_Ex/In-class_Ex05.html">
  <span class="dropdown-text">In-class Exercise 5</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex06.html">
+    <a class="dropdown-item" href="../In-class_Ex/In-class_Ex06.html">
  <span class="dropdown-text">In-class Exercise 6</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex10.html">
+    <a class="dropdown-item" href="../In-class_Ex/In-class_Ex10.html">
  <span class="dropdown-text">In-class Exercise 10</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex11.html">
+    <a class="dropdown-item" href="../In-class_Ex/In-class_Ex11.html">
  <span class="dropdown-text">In-class Exercise 11</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex12.html">
+    <a class="dropdown-item" href="../In-class_Ex/In-class_Ex12.html">
  <span class="dropdown-text">In-class Exercise 12</span></a>
   </li>  
     </ul>
@@ -232,15 +208,15 @@ window.Quarto = {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercise">    
         <li>
-    <a class="dropdown-item" href="./Take-home_ex/Take-home_ex01.html">
+    <a class="dropdown-item" href="../Take-home_ex/Take-home_ex01.html">
  <span class="dropdown-text">Take home Exercise 1</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Take-home_ex/Take-home_ex02/Take-home_ex02.html">
+    <a class="dropdown-item" href="../Take-home_ex/Take-home_ex02/Take-home_ex02.html">
  <span class="dropdown-text">Take home Exercise 2</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Take-home_ex/Take-home_ex03/Take-home_ex03.html">
+    <a class="dropdown-item" href="../Take-home_ex/Take-home_ex03/Take-home_ex03.html">
  <span class="dropdown-text">Take home Exercise 3</span></a>
   </li>  
     </ul>
@@ -248,11 +224,11 @@ window.Quarto = {
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
+    <a class="nav-link" href="../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
 </ul>
@@ -267,22 +243,60 @@ window.Quarto = {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#loading-the-r-packages" id="toc-loading-the-r-packages" class="nav-link active" data-scroll-target="#loading-the-r-packages">Loading the R packages</a></li>
+  <li><a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation">Data preparation</a></li>
+  <li><a href="#tidying-up-field-names" id="toc-tidying-up-field-names" class="nav-link" data-scroll-target="#tidying-up-field-names">Tidying up field names</a>
+  <ul class="collapse">
+  <li><a href="#cleaning-spatial-data" id="toc-cleaning-spatial-data" class="nav-link" data-scroll-target="#cleaning-spatial-data">Cleaning spatial data</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Welcome</h1>
-</div>
+<h1 class="title">In Class exercise 12</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Analysis</div>
+    <div class="quarto-category">R</div>
+    <div class="quarto-category">sf</div>
+    <div class="quarto-category">tidyverse</div>
+    <div class="quarto-category">tmap</div>
+    <div class="quarto-category">httr</div>
+    <div class="quarto-category">performance</div>
+  </div>
+  </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Brian Lim </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 4, 2024</p>
+    </div>
+  </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">November 4, 2024</p>
+    </div>
+  </div>
     
   </div>
   
@@ -291,225 +305,96 @@ window.Quarto = {
 </header>
 
 
-<p>Welcome to my IS415 Geospatial Analytics and Applications. In this website, you will find my coursework prepared for this course.</p>
+<section id="loading-the-r-packages" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-r-packages">Loading the R packages</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, sf, tmap, httr, performance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The code chunk below imports multiple csv files in a specified folder and append them into a single tibble data frame.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>folder_path <span class="ot">&lt;-</span> <span class="st">"data/In-class_Ex12/aspatial"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>file_list <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path =</span> folder_path, </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">pattern =</span> <span class="st">"^realis.*</span><span class="sc">\\</span><span class="st">.csv$"</span>, </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>realis_data <span class="ot">&lt;-</span> file_list <span class="sc">%&gt;%</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(read_csv)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The following code chunk converts values in Sale Date field from character to numerical date format, and - extracting resale and condominium transaction records.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>condo_resale <span class="ot">&lt;-</span> realis_data <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">Sale Date</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">dmy</span>(<span class="st">`</span><span class="at">Sale Date</span><span class="st">`</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="st">`</span><span class="at">Type of Sale</span><span class="st">`</span> <span class="sc">==</span> <span class="st">"Resale"</span> <span class="sc">&amp;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>           <span class="st">`</span><span class="at">Property Type</span><span class="st">`</span> <span class="sc">==</span> <span class="st">"Condominium"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="data-preparation" class="level2">
+<h2 class="anchored" data-anchor-id="data-preparation">Data preparation</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>postcode <span class="ot">&lt;-</span> <span class="fu">unique</span>(condo_resale<span class="sc">$</span><span class="st">`</span><span class="at">Postal Code</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="st">"https://onemap.gov.sg/api/common/elastic/search"</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>found <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>not_found <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (postcode <span class="cf">in</span> postcode){</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  query <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">'searchVal'</span><span class="ot">=</span>postcode, <span class="st">'returnGeom'</span><span class="ot">=</span><span class="st">'Y'</span>, </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                <span class="st">'getAddrDetails'</span><span class="ot">=</span><span class="st">'Y'</span>, <span class="st">'pageNum'</span><span class="ot">=</span><span class="st">'1'</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">GET</span>(url, <span class="at">query=</span>query)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> ((<span class="fu">content</span>(res)<span class="sc">$</span>found)<span class="sc">!=</span><span class="dv">0</span>){</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    found <span class="ot">&lt;-</span> <span class="fu">rbind</span>(found, <span class="fu">data.frame</span>(<span class="fu">content</span>(res))[<span class="dv">4</span><span class="sc">:</span><span class="dv">13</span>])</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {not_found <span class="ot">=</span> <span class="fu">data.frame</span>(postcode)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="tidying-up-field-names" class="level2">
+<h2 class="anchored" data-anchor-id="tidying-up-field-names">Tidying up field names</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>found <span class="ot">&lt;-</span> found <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="dv">6</span><span class="sc">:</span><span class="dv">8</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">POSTAL =</span> <span class="st">`</span><span class="at">results.POSTAL</span><span class="st">`</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">XCOORD =</span> <span class="st">`</span><span class="at">results.X</span><span class="st">`</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">YCOORD =</span> <span class="st">`</span><span class="at">results.Y</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(found, <span class="st">"data/In-class_Ex12/found.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>found <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/In-class_Ex12/found.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The following chunk of code is to join <code>condo_resale</code> and <code>found</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>condo_resale_geocoded <span class="ot">=</span> <span class="fu">left_join</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  condo_resale, found, </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">by =</span> <span class="fu">c</span>(<span class="st">'Postal Code'</span> <span class="ot">=</span> <span class="st">'POSTAL'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The following chunk of code is to convert <code>condo_resale_geocoded</code> from <strong>tibble</strong> data frame to <strong>sf</strong> point feature data frame</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>condo_resale_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(condo_resale_geocoded, </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                            <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"XCOORD"</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                                       <span class="st">"YCOORD"</span>),</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">crs=</span><span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="cleaning-spatial-data" class="level3">
+<h3 class="anchored" data-anchor-id="cleaning-spatial-data">Cleaning spatial data</h3>
+<p>The code chunk below is used to check if there are overlapping point features.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>overlapping_points <span class="ot">&lt;-</span> condo_resale_sf <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">overlap =</span> <span class="fu">lengths</span>(<span class="fu">st_equals</span>(., .)) <span class="sc">&gt;</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In the code code chunk below, <code>st_jitter()</code> of sf package is used to move the point features by 5m to avoid overlapping point features.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>condo_resale_sf <span class="ot">&lt;-</span> condo_resale_sf <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_jitter</span>(<span class="at">amount =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
+</section>
+</section>
 
-
-<div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
-<div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-categories="Analysis,R,sf,tidyverse" data-listing-date-sort="1723737600000" data-listing-file-modified-sort="1725797665029" data-listing-date-modified-sort="1725797665000" data-listing-reading-time-sort="11" data-listing-word-count-sort="2046">
-<a href="./Hands-on_Ex/Hands-on_Ex01.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex01_files\figure-html\unnamed-chunk-8-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Geospatial Data Science with R
-</h5>
-<div class="card-text listing-description">
-In this hands-on exercise, I learnt of how to perform geospatial data science tasks in R by using the <code>sf</code> package.
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Brian Lim
-</div>
-<div class="listing-date">
-Aug 16, 2024
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="1" data-categories="Analysis,R,sf,tmap,tidyverse" data-listing-date-sort="1724342400000" data-listing-file-modified-sort="1725797169434" data-listing-date-modified-sort="1725797169000" data-listing-reading-time-sort="19" data-listing-word-count-sort="3749">
-<a href="./Hands-on_Ex/Hands-on_Ex02.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex02_files\figure-html\unnamed-chunk-11-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Thematic Mapping and GeoVisualisation with R
-</h5>
-<div class="card-text listing-description">
-In this hands-on exercise, I learn how to create effective and accurate thematic/choropleth maps and other geospatial visualization techniques using the <code>tmap</code> package in R.
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Brian Lim
-</div>
-<div class="listing-date">
-Aug 23, 2024
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="2" data-categories="Analysis,R,sf,tmap,tidyverse,raster,spatstat,maptools" data-listing-date-sort="1724860800000" data-listing-file-modified-sort="1725795416843" data-listing-date-modified-sort="1725795416000" data-listing-reading-time-sort="24" data-listing-word-count-sort="4611">
-<a href="./Hands-on_Ex/Hands-on_Ex03.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex03_files\figure-html\unnamed-chunk-17-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-1st &amp; 2nd Order Spatial Point Patterns Analysis Methods
-</h5>
-<div class="card-text listing-description">
-In this hands-on exercise, I learn how to to analyze spatial point patterns in R. On top of that I learn to apply first- and second-order analyses to assess the randomness…
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Brian Lim
-</div>
-<div class="listing-date">
-Aug 29, 2024
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="3" data-categories="Analysis,R,sf,tmap,tidyverse,spatstat,spdep,knitr" data-listing-date-sort="1726156800000" data-listing-file-modified-sort="1726452372399" data-listing-date-modified-sort="1726452372000" data-listing-reading-time-sort="17" data-listing-word-count-sort="3223">
-<a href="./Hands-on_Ex/Hands-on_ex05.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_ex05_files\figure-html\unnamed-chunk-5-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Spatial Weights and Applications
-</h5>
-<div class="card-text listing-description">
-In this hands-on exercise, you’ll learn how to analyze spatial data in R by performing a series of tasks. You’ll start by importing geospatial data using the <code>sf</code> package and…<code></code><code></code><code></code>
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Brian Lim
-</div>
-<div class="listing-date">
-Sep 13, 2024
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="4" data-categories="Analysis,R,sf,tmap,tidyverse,spatstat,spdep,knitr" data-listing-date-sort="1726675200000" data-listing-file-modified-sort="1726843254284" data-listing-date-modified-sort="1726843254000" data-listing-reading-time-sort="33" data-listing-word-count-sort="6549">
-<a href="./Hands-on_Ex/Hands-on_ex06.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_ex06_files\figure-html\unnamed-chunk-5-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Global and Local Measures of Spatial Autocorrelation
-</h5>
-<div class="card-text listing-description">
-In this hands-on exercise will teach you how to compute both Global and Local Measures of Spatial Autocorrelation (GMSA &amp; LMSA) using the <code>spdep</code> package in R. By the end of…
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Brian Lim
-</div>
-<div class="listing-date">
-Sep 19, 2024
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="5" data-categories="Analysis,R,sf,tmap,tidyverse,spatstat,spdep,knitr" data-listing-date-sort="1728403200000" data-listing-file-modified-sort="1729491148789" data-listing-date-modified-sort="1729491148000" data-listing-reading-time-sort="25" data-listing-word-count-sort="4803">
-<a href="./Hands-on_Ex/Hands-on_Ex09.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex09_files\figure-html\unnamed-chunk-9-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Geographical Segmentation with Spatially Constrained Clustering Techniques
-</h5>
-<div class="card-text listing-description">
-In this hands-on exercise, you will gain hands-on experience on how to delineate homogeneous region by using geographically referenced multivariate data. There are two major…
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Brian Lim
-</div>
-<div class="listing-date">
-Oct 9, 2024
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="6" data-categories="Analysis,R,sf,tmap,tidyverse,spatstat,spdep,skater" data-listing-date-sort="1728921600000" data-listing-file-modified-sort="1729492286263" data-listing-date-modified-sort="1729492286000" data-listing-reading-time-sort="12" data-listing-word-count-sort="2358">
-<a href="./Hands-on_Ex/Hands-on_Ex10.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex10_files\figure-html\unnamed-chunk-6-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Spatially Constrained Cluster Analysis
-</h5>
-<div class="card-text listing-description">
-In this section, you will learn how to derive spatially constrained cluster by using <em>skater()</em> method of <strong>spdep</strong> package.
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Brian Lim
-</div>
-<div class="listing-date">
-Oct 15, 2024
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="7" data-categories="Analysis,R,sf,tmap,tidyverse,spatstat,spdep,knitr" data-listing-date-sort="1729440000000" data-listing-file-modified-sort="1730076355895" data-listing-date-modified-sort="1730076355000" data-listing-reading-time-sort="16" data-listing-word-count-sort="3090">
-<a href="./Hands-on_Ex/Hands-on_Ex11.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex11_files\figure-html\unnamed-chunk-12-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method
-</h5>
-<div class="card-text listing-description">
-<strong>Geographically weighted regression (GWR)</strong> is a spatial statistical technique that takes non-stationary variables into consideration (e.g., climate; demographic factors;…
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Brian Lim
-</div>
-<div class="listing-date">
-Oct 21, 2024
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="8" data-categories="Analysis,R,sf,tmap,tidyverse,spatstat,spdep,knitr" data-listing-date-sort="1730044800000" data-listing-file-modified-sort="1730127705980" data-listing-date-modified-sort="1730127705000" data-listing-reading-time-sort="18" data-listing-word-count-sort="3539">
-<a href="./Hands-on_Ex/Hands-on_Ex12.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex12_files\figure-html\unnamed-chunk-7-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Geographically Weighted Predictive Models
-</h5>
-<div class="card-text listing-description">
-Predictive modelling uses statistical learning or machine learning techniques to predict outcomes. By and large, the event one wants to predict is in the future. However, a…
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Brian Lim
-</div>
-<div class="listing-date">
-Oct 28, 2024
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

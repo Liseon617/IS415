@@ -1,7 +1,7 @@
 ---
-title: "In Class exercise 11"
+title: "In Class exercise 12"
 author: "Brian Lim"
-date: "October 21, 2024"
+date: "November 4, 2024"
 date-modified: "last-modified"
 categories:
   - Analysis
@@ -52,6 +52,7 @@ postcode <- unique(condo_resale$`Postal Code`)
 ```
 
 ```{r}
+#| eval: false
 url <- "https://onemap.gov.sg/api/common/elastic/search"
 found <- data.frame()
 not_found <- data.frame()
@@ -69,11 +70,21 @@ for (postcode in postcode){
 
 ## Tidying up field names
 ```{r}
+#| eval: false
 found <- found %>%
   select(c(6:8)) %>%
   rename(POSTAL = `results.POSTAL`,
          XCOORD = `results.X`,
          YCOORD = `results.Y`)
+```
+
+```{r}
+#| eval: false
+write_rds(found, "data/In-class_Ex12/found.rds")
+```
+
+```{r}
+found <- read_rds("data/In-class_Ex12/found.rds")
 ```
 
 The following chunk of code is to join `condo_resale` and `found`
