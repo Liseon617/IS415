@@ -1,0 +1,105 @@
+---
+title: "In Class exercise 11"
+author: "Brian Lim"
+date: "October 21, 2024"
+date-modified: "last-modified"
+categories:
+  - Analysis
+  - R
+  - sf
+  - tidyverse
+  - tmap
+  - httr
+  - performance
+format: html
+editor: visual
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true  
+  cache: true
+---
+
+## Loading the R packages
+
+```{r}
+pacman::p_load(tidyverse, sf, tmap, httr, performance)
+```
+
+
+The code chunk below imports multiple csv files in a specified folder and append them into a single tibble data frame.
+```{r}
+folder_path <- "data/In-class_Ex12/aspatial"
+file_list <- list.files(path = folder_path, 
+                        pattern = "^realis.*\\.csv$", 
+                        full.names = TRUE)
+
+realis_data <- file_list %>%
+  map_dfr(read_csv)
+```
+The following code chunk converts values in Sale Date field from character to numerical date format, and - extracting resale and condominium transaction records.
+```{r}
+condo_resale <- realis_data %>%
+  mutate(`Sale Date` = dmy(`Sale Date`)) %>%
+  filter(`Type of Sale` == "Resale" &
+           `Property Type` == "Condominium")
+```
+
+## Data preparation
+```{r}
+postcode <- unique(condo_resale$`Postal Code`)
+```
+
+```{r}
+url <- "https://onemap.gov.sg/api/common/elastic/search"
+found <- data.frame()
+not_found <- data.frame()
+
+for (postcode in postcode){
+  query <- list('searchVal'=postcode, 'returnGeom'='Y', 
+                'getAddrDetails'='Y', 'pageNum'='1')
+  res <- GET(url, query=query)
+  if ((content(res)$found)!=0){
+    found <- rbind(found, data.frame(content(res))[4:13])
+  } else {not_found = data.frame(postcode)
+  }
+}
+```
+
+## Tidying up field names
+```{r}
+found <- found %>%
+  select(c(6:8)) %>%
+  rename(POSTAL = `results.POSTAL`,
+         XCOORD = `results.X`,
+         YCOORD = `results.Y`)
+```
+
+The following chunk of code is to join `condo_resale` and `found`
+```{r}
+condo_resale_geocoded = left_join(
+  condo_resale, found, 
+  by = c('Postal Code' = 'POSTAL'))
+```
+
+The following chunk of code is to convert `condo_resale_geocoded` from **tibble** data frame to **sf** point feature data frame
+```{r}
+condo_resale_sf <- st_as_sf(condo_resale_geocoded, 
+                            coords = c("XCOORD",
+                                       "YCOORD"),
+                            crs=3414)
+```
+
+### Cleaning spatial data
+The code chunk below is used to check if there are overlapping point features.
+```{r}
+overlapping_points <- condo_resale_sf %>%
+  mutate(overlap = lengths(st_equals(., .)) > 1)
+```
+
+In the code code chunk below, `st_jitter()` of sf package is used to move the point features by 5m to avoid overlapping point features.
+```{r}
+condo_resale_sf <- condo_resale_sf %>%
+  st_jitter(amount = 2)
+```
