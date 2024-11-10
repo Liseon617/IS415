@@ -406,6 +406,11 @@ Based on the output of the initial GWR model (gwr_adaptive), all of the features
 ### 3.8.2 Calibrating Random Forest (RF) Model
 
 In this section, we will calibrate a model to predict HDB rental price by using random forest function of [**ranger**](https://cran.r-project.org/web/packages/ranger/index.html) package.
+```{r}
+train_data <- train_data %>%
+  slice_head(n = 1000)
+```
+
 
 ```{r}
 #| eval: false
@@ -459,6 +464,114 @@ rf_tuned <- read_rds("data/rds/model/rf_tuned.rds")
 ```
 
 ### 3.8.4 Calibrating Geographical Random Forest (GRF) Model
+
+```{r}
+train_data <- read_rds("data/rds/model/train_data.rds")
+test_data <- read_rds("data/rds/model/test_data.rds")
+```
+
+Then we will filter for room type, creating 1 model for each type (3-room, 4-room, 5-room)
+
+```{r}
+train_data_3_room <- train_data %>%
+  filter(flat_type %in% c("3-ROOM"))
+
+train_data_4_room <- train_data %>%
+  filter(flat_type %in% c("4-ROOM"))
+
+train_data_5_room <- train_data %>%
+  filter(flat_type %in% c("5-ROOM"))
+```
+
+```{r}
+coords_train_3_room <- st_coordinates(train_data_3_room)
+coords_train_4_room <- st_coordinates(train_data_4_room)
+coords_train_5_room <- st_coordinates(train_data_5_room)
+```
+
+```{r}
+train_data_3_room$flat_type <- as.factor(train_data_3_room$flat_type)
+train_data_3_room$town <- as.factor(train_data_3_room$town)
+train_data_3_room$region <- as.factor(train_data_3_room$region)
+
+train_data_4_room$flat_type <- as.factor(train_data_4_room$flat_type)
+train_data_4_room$town <- as.factor(train_data_4_room$town)
+train_data_4_room$region <- as.factor(train_data_4_room$region)
+
+train_data_5_room$flat_type <- as.factor(train_data_5_room$flat_type)
+train_data_5_room$town <- as.factor(train_data_5_room$town)
+train_data_5_room$region <- as.factor(train_data_5_room$region)
+```
+
+```{r}
+train_data_5_room <- train_data %>%
+  filter(flat_type %in% c("5-ROOM")) %>%
+  slice_head(n = 100)
+```
+
+```{r}
+train_data_3_room <- train_data_3_room %>% 
+  st_drop_geometry()
+
+train_data_4_room <- train_data_4_room %>% 
+  st_drop_geometry()
+
+train_data_5_room <- train_data_5_room %>% 
+  st_drop_geometry()
+```
+
+```{r}
+#| eval: false
+set.seed(1234)
+gwRF_adaptive <- grf(formula = monthly_rent ~ 
+                  no_of_kindergarten_500m + 
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_cbd,
+                  dframe=train_data_3_room, 
+                  bw=50,                   # Broader bandwidth
+                  kernel="adaptive",
+                  ntree=1,
+                  coords=coords_train_3_room,
+                  min.node.size=10)  
+```
+
+```{r}
+#| eval: false
+set.seed(1234)
+gwRF_adaptive <- grf(formula = monthly_rent ~ 
+                  no_of_kindergarten_500m + 
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_cbd,
+                  dframe=train_data_4_room, 
+                  bw=10,                   # Broader bandwidth
+                  kernel="adaptive",
+                  ntree=10,
+                  coords=coords_train_4_room,
+                  min.node.size=10)  
+```
+```{r}
+write_rds(gwRF_adaptive, "data/rds/model/gwRF_adaptive_4_room.rds")
+```
+
+```{r}
+#| eval: false
+set.seed(1234)
+gwRF_adaptive_5_room <- grf(formula = monthly_rent ~ 
+                  no_of_kindergarten_500m + 
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_cbd,
+                  dframe=train_data_5_room, 
+                  bw=10,                   # Broader bandwidth
+                  kernel="adaptive",
+                  ntree=10,
+                  coords=coords_train_5_room,
+                  min.node.size=10)  
+```
+
+```{r eval=FALSE}
+#| eval: false
+write_rds(gwRF_adaptive_5_room, "data/rds/model/gwRF_adaptive_5_room.rds")
+```
 
 The code chunk below calibrate a geographic random forest model by using `grf()` of **SpatialML** package.
 
