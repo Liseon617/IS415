@@ -709,9 +709,9 @@
   {
     "objectID": "about.html",
     "href": "about.html",
-    "title": "About",
+    "title": "Welcome",
     "section": "",
-    "text": "Welcome! I’m Brian Lim ZhengLong, an undergraduate at Singapore Management University (SMU). This website is dedicated to documenting my learning journey in IS415: Geospatial Analytics and Applications under the guidance of Professor Kam Tin Seong. Join me as I explore the fascinating realms of big data, geospatial analysis, and urban planning.\nLet’s connect and learn together!"
+    "text": "Welcome! I’m Brian Lim ZhengLong, an undergraduate at Singapore Management University (SMU). This website is dedicated to documenting my learning journey in IS415: Geospatial Analytics and Applications under the guidance of Professor Kam Tin Seong. Join me as I explore the fascinating realms of big data, geospatial analysis, and urban planning.\nLet’s connect and learn together!\n\n\n\n\n\n\n\nWelcome to my IS415 Geospatial Analytics and Applications. In this website, you will find my coursework prepared for this course."
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex02.html",
@@ -1188,5 +1188,159 @@
     "title": "Brian’s IS415 Experience",
     "section": "",
     "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n        0 0     false"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html",
+    "href": "In-class_Ex/In-class_Ex13.html",
+    "title": "In Class exercise 13",
+    "section": "",
+    "text": "pacman::p_load(sf, spdep, GWmodel, SpatialML, \n               tmap, rsample, yardstick, tidyverse, \n               knitr, kableExtra, spatialRF)\n\n\n\n\n\nmdata &lt;- read_rds(\"data/In-class_Ex13/rds/mdata.rds\")\n\n\n\n\nCalibrating predictive models are computational intensive, especially random forest method is used. For quick prototyping, a 10% sample will be selected at random from the data by using the code chunk below.\n\nset.seed(1234)\nHDB_sample &lt;- mdata %&gt;%\n  sample_n(1500)\n\n\n\n\n\noverlapping_points &lt;- HDB_sample %&gt;%\n  mutate(overlap = lengths(st_equals(., .)) &gt;1)\nsummary(overlapping_points$overlap)\n\n   Mode   FALSE    TRUE \nlogical    1047     453 \n\n\n\n\n\n\nHDB_sample &lt;- HDB_sample %&gt;%\n  st_jitter(amount = 5)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#import-the-packages",
+    "href": "In-class_Ex/In-class_Ex13.html#import-the-packages",
+    "title": "In Class exercise 13",
+    "section": "",
+    "text": "pacman::p_load(sf, spdep, GWmodel, SpatialML, \n               tmap, rsample, yardstick, tidyverse, \n               knitr, kableExtra, spatialRF)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#preparing-data",
+    "href": "In-class_Ex/In-class_Ex13.html#preparing-data",
+    "title": "In Class exercise 13",
+    "section": "",
+    "text": "mdata &lt;- read_rds(\"data/In-class_Ex13/rds/mdata.rds\")"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#data-sampling",
+    "href": "In-class_Ex/In-class_Ex13.html#data-sampling",
+    "title": "In Class exercise 13",
+    "section": "",
+    "text": "Calibrating predictive models are computational intensive, especially random forest method is used. For quick prototyping, a 10% sample will be selected at random from the data by using the code chunk below.\n\nset.seed(1234)\nHDB_sample &lt;- mdata %&gt;%\n  sample_n(1500)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#checking-of-overlapping-point",
+    "href": "In-class_Ex/In-class_Ex13.html#checking-of-overlapping-point",
+    "title": "In Class exercise 13",
+    "section": "",
+    "text": "overlapping_points &lt;- HDB_sample %&gt;%\n  mutate(overlap = lengths(st_equals(., .)) &gt;1)\nsummary(overlapping_points$overlap)\n\n   Mode   FALSE    TRUE \nlogical    1047     453"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#spatial-jitter",
+    "href": "In-class_Ex/In-class_Ex13.html#spatial-jitter",
+    "title": "In Class exercise 13",
+    "section": "",
+    "text": "HDB_sample &lt;- HDB_sample %&gt;%\n  st_jitter(amount = 5)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#multicollinearity-check",
+    "href": "In-class_Ex/In-class_Ex13.html#multicollinearity-check",
+    "title": "In Class exercise 13",
+    "section": "Multicollinearity check",
+    "text": "Multicollinearity check\n\nmdata_nogeo &lt;- mdata %&gt;%\n  st_drop_geometry()\nggstatsplot::ggcorrmat(mdata_nogeo[,2:17], matrix.type = \"full\")"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#computing-bw",
+    "href": "In-class_Ex/In-class_Ex13.html#computing-bw",
+    "title": "In Class exercise 13",
+    "section": "Computing bw",
+    "text": "Computing bw\n\ngwr_bw_train_ad &lt;- bw.gwr(resale_price ~ floor_area_sqm +\n                  storey_order + remaining_lease_mths +\n                  PROX_CBD + PROX_ELDERLYCARE + PROX_HAWKER +\n                  PROX_MRT + PROX_PARK + PROX_MALL + \n                  PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +\n                  WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +\n                  WITHIN_1KM_PRISCH,\n                  data=train_data,\n                  approach=\"CV\",\n                  kernel=\"gaussian\",\n                  adaptive=TRUE,\n                  longlat=FALSE)\n\nTake a cup of tea and have a break, it will take a few minutes.\n          -----A kind suggestion from GWmodel development group\nAdaptive bandwidth: 6395 CV score: 3.60536e+13 \nAdaptive bandwidth: 3960 CV score: 3.320316e+13 \nAdaptive bandwidth: 2455 CV score: 2.928339e+13 \nAdaptive bandwidth: 1524 CV score: 2.550957e+13 \nAdaptive bandwidth: 950 CV score: 1.95632e+13 \nAdaptive bandwidth: 593 CV score: 1.58347e+13 \nAdaptive bandwidth: 375 CV score: 1.310042e+13 \nAdaptive bandwidth: 237 CV score: 1.113152e+13 \nAdaptive bandwidth: 155 CV score: 9.572037e+12 \nAdaptive bandwidth: 101 CV score: 8.457003e+12 \nAdaptive bandwidth: 71 CV score: 7.605058e+12 \nAdaptive bandwidth: 49 CV score: 6.965752e+12 \nAdaptive bandwidth: 38 CV score: 8.249935e+12 \nAdaptive bandwidth: 58 CV score: 7.275234e+12 \nAdaptive bandwidth: 45 CV score: 6.871439e+12 \nAdaptive bandwidth: 41 CV score: 6.7928e+12 \nAdaptive bandwidth: 40 CV score: 6.780447e+12 \nAdaptive bandwidth: 38 CV score: 8.249935e+12 \nAdaptive bandwidth: 40 CV score: 6.780447e+12"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#model-calibration",
+    "href": "In-class_Ex/In-class_Ex13.html#model-calibration",
+    "title": "In Class exercise 13",
+    "section": "Model Calibration",
+    "text": "Model Calibration\n\ngwr_ad &lt;- gwr.basic(formula = resale_price ~\n                            floor_area_sqm + storey_order +\n                            remaining_lease_mths + PROX_CBD + \n                            PROX_ELDERLYCARE + PROX_HAWKER +\n                            PROX_MRT + PROX_PARK + PROX_MALL + \n                            PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +\n                            WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +\n                            WITHIN_1KM_PRISCH,\n                          data=train_data,\n                          bw=20, \n                          kernel = 'gaussian', \n                          adaptive=TRUE,\n                          longlat = FALSE)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#computing-test-data-bw",
+    "href": "In-class_Ex/In-class_Ex13.html#computing-test-data-bw",
+    "title": "In Class exercise 13",
+    "section": "Computing test data bw",
+    "text": "Computing test data bw\n\ngwr_bw_test_adaptive &lt;- bw.gwr(resale_price ~ floor_area_sqm +\n                  storey_order + remaining_lease_mths +\n                  PROX_CBD + PROX_ELDERLYCARE + PROX_HAWKER +\n                  PROX_MRT + PROX_PARK + PROX_MALL + \n                  PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +\n                  WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +\n                  WITHIN_1KM_PRISCH,\n                  data=test_data,\n                  approach=\"CV\",\n                  kernel=\"gaussian\",\n                  adaptive=TRUE,\n                  longlat=FALSE)\n\nTake a cup of tea and have a break, it will take a few minutes.\n          -----A kind suggestion from GWmodel development group\nAdaptive bandwidth: 3447 CV score: 1.902155e+13 \nAdaptive bandwidth: 2138 CV score: 1.752645e+13 \nAdaptive bandwidth: 1328 CV score: 1.556299e+13 \nAdaptive bandwidth: 828 CV score: 1.357498e+13 \nAdaptive bandwidth: 518 CV score: 1.030751e+13 \nAdaptive bandwidth: 327 CV score: 8.348364e+12 \nAdaptive bandwidth: 208 CV score: 6.860544e+12 \nAdaptive bandwidth: 135 CV score: 5.969504e+12 \nAdaptive bandwidth: 89 CV score: 5.242221e+12 \nAdaptive bandwidth: 62 CV score: 4.742767e+12 \nAdaptive bandwidth: 43 CV score: 4.357839e+12 \nAdaptive bandwidth: 34 CV score: 4.125848e+12 \nAdaptive bandwidth: 25 CV score: 4.04299e+12 \nAdaptive bandwidth: 23 CV score: 1.549626e+13 \nAdaptive bandwidth: 30 CV score: 4.074906e+12 \nAdaptive bandwidth: 25 CV score: 4.04299e+12"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#predicting-with-test-data",
+    "href": "In-class_Ex/In-class_Ex13.html#predicting-with-test-data",
+    "title": "In Class exercise 13",
+    "section": "Predicting with test data",
+    "text": "Predicting with test data\n\ngwr_pred &lt;- gwr.predict(formula = resale_price ~\n                          floor_area_sqm + storey_order +\n                          remaining_lease_mths + PROX_CBD + \n                          PROX_ELDERLYCARE + PROX_HAWKER + \n                          PROX_MRT + PROX_PARK + PROX_MALL + \n                          PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +\n                          WITHIN_350M_CHILDCARE + WITHIN_350M_BUS + \n                          WITHIN_1KM_PRISCH, \n                        data=train_data, \n                        predictdata = test_data, \n                        bw=20, \n                        kernel = 'gaussian', \n                        adaptive=TRUE, \n                        longlat = FALSE)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#saving-predicted-values",
+    "href": "In-class_Ex/In-class_Ex13.html#saving-predicted-values",
+    "title": "In Class exercise 13",
+    "section": "Saving predicted values",
+    "text": "Saving predicted values\n\ngwr_pred_df &lt;- as.data.frame(\n  gwr_pred$SDF$prediction) %&gt;%\n  rename(gwr_pred = \"gwr_pred$SDF$prediction\")"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#data-preparation",
+    "href": "In-class_Ex/In-class_Ex13.html#data-preparation",
+    "title": "In Class exercise 13",
+    "section": "Data preparation",
+    "text": "Data preparation\n\ncoords &lt;- st_coordinates(HDB_sample)\ncoords_train &lt;- st_coordinates(train_data)\ncoords_test &lt;- st_coordinates(test_data)\n\nTo drop geometry column of the sf data.frame by using st_drop_geometry() of sf package.\n\ntrain_data_nogeom &lt;- train_data %&gt;% \n  st_drop_geometry()"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#calibrating-rf-model",
+    "href": "In-class_Ex/In-class_Ex13.html#calibrating-rf-model",
+    "title": "In Class exercise 13",
+    "section": "Calibrating RF model",
+    "text": "Calibrating RF model\n\nset.seed(1234)\nrf &lt;- ranger(resale_price ~ floor_area_sqm + storey_order + \n               remaining_lease_mths + PROX_CBD + PROX_ELDERLYCARE + \n               PROX_HAWKER + PROX_MRT + PROX_PARK + PROX_MALL + \n               PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +\n               WITHIN_350M_CHILDCARE + WITHIN_350M_BUS + \n               WITHIN_1KM_PRISCH,\n             data=train_data_nogeom)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#preparing-the-test-data",
+    "href": "In-class_Ex/In-class_Ex13.html#preparing-the-test-data",
+    "title": "In Class exercise 13",
+    "section": "Preparing the test data",
+    "text": "Preparing the test data\n\ntest_data_nogeom &lt;- cbind(\n  test_data,coords_test) %&gt;%\n  st_drop_geometry()"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#predicting-with-rf",
+    "href": "In-class_Ex/In-class_Ex13.html#predicting-with-rf",
+    "title": "In Class exercise 13",
+    "section": "Predicting with rf",
+    "text": "Predicting with rf\n\nrf_pred &lt;- predict(rf, data = test_data_nogeom)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#saving-the-predicted-values",
+    "href": "In-class_Ex/In-class_Ex13.html#saving-the-predicted-values",
+    "title": "In Class exercise 13",
+    "section": "Saving the predicted values",
+    "text": "Saving the predicted values\n\nrf_pred_df &lt;- as.data.frame(rf_pred$predictions) %&gt;%\n  rename(rf_pred = \"rf_pred$predictions\")"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#predicting-with-the-test-data",
+    "href": "In-class_Ex/In-class_Ex13.html#predicting-with-the-test-data",
+    "title": "In Class exercise 13",
+    "section": "Predicting with the test data",
+    "text": "Predicting with the test data\n\ngrf_pred &lt;- predict.grf(grf_ad, \n                           test_data_nogeom, \n                           x.var.name=\"X\",\n                           y.var.name=\"Y\", \n                           local.w=1,\n                           global.w=0)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#saving-the-predicted-values-1",
+    "href": "In-class_Ex/In-class_Ex13.html#saving-the-predicted-values-1",
+    "title": "In Class exercise 13",
+    "section": "Saving the predicted values",
+    "text": "Saving the predicted values\nConvert the output from grf_pred into a data.frame.\n\ngrf_pred_df &lt;- as.data.frame(grf_pred)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#transposing-data",
+    "href": "In-class_Ex/In-class_Ex13.html#transposing-data",
+    "title": "In Class exercise 13",
+    "section": "Transposing Data",
+    "text": "Transposing Data\n\ntest_longer &lt;- test_data_pred %&gt;%\n  st_drop_geometry() %&gt;%\n  pivot_longer(cols = ends_with(\"pred\"),\n               names_to = \"model\",\n               values_to = \"predicted\")"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#renaming",
+    "href": "In-class_Ex/In-class_Ex13.html#renaming",
+    "title": "In Class exercise 13",
+    "section": "Renaming",
+    "text": "Renaming\n\nmodel_labels &lt;- c(\n  gwr_pred = \"gwr\",\n  rf_pred = \"Random Forest\",\n  grf_pred = \"gwRF\"\n)\n\ntest_longer &lt;- test_longer %&gt;%\n  mutate(model = recode (\n    model, !!!model_labels))"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex13.html#computing-rmse",
+    "href": "In-class_Ex/In-class_Ex13.html#computing-rmse",
+    "title": "In Class exercise 13",
+    "section": "Computing rmse",
+    "text": "Computing rmse\n\nrmse_longer &lt;- test_longer %&gt;%\n  group_by(model) %&gt;%\n  rmse(truth = resale_price,\n       estimate = predicted) %&gt;%\n  rename(rmse = .estimate) %&gt;%\n  select(model, rmse)\n\n\nrmse_results &lt;- rmse_longer"
   }
 ]
